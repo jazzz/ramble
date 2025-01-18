@@ -1,0 +1,10 @@
+[package]
+name = "ramble"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.95"
+clap = { version = "4.5.26", features = ["derive"] }
+paris = { version = "1.5.15", features = ["macros"] }
+yaml-rust2 = "0.9.0"
