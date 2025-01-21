@@ -1,15 +1,16 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use paris::{info, Logger};
+use log::debug;
+use packet::Packet;
+use paris::{error, info};
 use std::fs::File;
 use std::io::Read;
-use yaml_rust2::{YamlEmitter, YamlLoader};
 
 mod packet;
 mod parse;
 
 use parse::Scanner;
-/// Simple program to greet a person
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 #[command(propagate_version = true)]
@@ -36,14 +37,35 @@ fn load_file(filepath: &str) -> Result<String> {
     Ok(file_data)
 }
 
+fn load_ramble_file(filename: &str) -> Result<Vec<Packet>> {
+    let scanner = Scanner {};
+    let cfg = load_file(filename)?;
+    let pkts = scanner.parse_yaml(&cfg)?;
+
+    Ok(pkts)
+}
+
 fn main() -> Result<()> {
     info!("Starting Ramble");
 
-    let scanner = Scanner {};
-    let cfg = load_file("ramble.yaml")?;
-    scanner.parse_yaml(&cfg)?;
+    let args = Cli::parse();
+
+    match args.command {
+        Commands::Verify { file } => {
+            // Load Ramble file
+            let filename = file.as_deref().unwrap_or("ramble.yaml");
+            match load_ramble_file(filename) {
+                Err(e) => error!("{} is invalid - {} ", filename, e),
+                Ok(pkts) => {
+                    debug!("Packets: {:?}", pkts);
+                }
+            }
+        }
+        _ => {
+            unimplemented!()
+        }
+    };
 
     info!("Done");
-
     Ok(())
 }
