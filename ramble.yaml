@@ -1,0 +1,19 @@
+#Example Ramble File
+---
+version: 1        # Required
+namespace: thisnamespace
+packets:
+  - name: hello   # Required
+    properties:
+      - crc
+    fields:
+      - seq: u8 
+  - name: change_record   # Required
+    fields:
+      - record_id: u8
+      - record_value: u8
+enums:
+  - name: mode
+    - A
+    - B
+    - C
