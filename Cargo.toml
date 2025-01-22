@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.26", features = ["derive"] }
+convert_case = "0.7.1"
 log = "0.4.25"
 paris = { version = "1.5.15", features = ["macros"] }
 yaml-rust2 = "0.9.0"

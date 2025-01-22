@@ -1,15 +1,19 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use log::debug;
-use packet::Packet;
 use paris::{error, info};
-use std::fs::File;
-use std::io::Read;
+use std::fs;
+use std::io::{Read, Write};
+use std::path::PathBuf;
+use std::{fs::File, path::Path};
 
+mod consts;
 mod packet;
 mod parse;
+mod targets;
 
+use packet::Packet;
 use parse::Scanner;
+use targets::{CodeGenerator, TargetC};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -22,11 +26,17 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// ensure ramble.yaml file is valid
-    Verify {
-        file: Option<String>,
-    },
+    Verify { file: Option<String> },
     Generate {
-        lang: String,
+        #[arg(short, long)]
+        /// The ramblefile to be loaded. "ramble.yaml" if not specified
+        file: Option<String>,
+        #[arg(short, long)]
+        /// Location to save the generated code
+        output_dir: Option<String>,
+        #[arg(long = "C")]
+        /// Output a C/C++ Library
+        target_c: bool,
     },
 }
 
@@ -45,6 +55,32 @@ fn load_ramble_file(filename: &str) -> Result<Vec<Packet>> {
     Ok(pkts)
 }
 
+fn save_file(filename: &PathBuf, contents: &[String]) -> Result<()> {
+    // Ensure entire path exists
+    fs::create_dir_all(filename.parent().expect("invalid parent path"))?;
+
+    let mut file = File::create(filename)?;
+
+    // TODO: avoid all these copies
+    let content_str = contents.join("\n");
+    file.write_all(content_str.as_bytes())?;
+
+    info!("File written to {}", filename.display().to_string());
+    Ok(())
+}
+
+fn add_preamble(mut content: Vec<String>) -> Vec<String> {
+    let mut preamble = vec![
+        "///////////////////////////////////////////////".into(),
+        "// This file was generated using Ramble.".into(),
+        "///////////////////////////////////////////////".into(),
+        "".into(),
+    ];
+
+    preamble.append(&mut content);
+    preamble
+}
+
 fn main() -> Result<()> {
     info!("Starting Ramble");
 
@@ -56,13 +92,35 @@ fn main() -> Result<()> {
             let filename = file.as_deref().unwrap_or("ramble.yaml");
             match load_ramble_file(filename) {
                 Err(e) => error!("{} is invalid - {} ", filename, e),
-                Ok(pkts) => {
-                    debug!("Packets: {:?}", pkts);
+                Ok(_) => {
+                    info!("Verify Completed")
                 }
             }
         }
-        _ => {
-            unimplemented!()
+        Commands::Generate {
+            file,
+            output_dir,
+            target_c,
+        } => {
+            let out_path = match output_dir.as_deref() {
+                Some(o) => Path::new(o),
+                None => Path::new("./"),
+            };
+
+            // Load Ramble file
+            let filename = file.as_deref().unwrap_or("ramble.yaml");
+            let packets = match load_ramble_file(filename) {
+                Err(e) => panic!("{} is invalid - {} ", filename, e),
+                Ok(pkts) => pkts,
+            };
+
+            let c = CodeGenerator {};
+            if target_c {
+                info!("Generating C/C++ Target");
+                let contents = c.to_code::<TargetC>(&packets);
+                let wrapped_contents = add_preamble(contents);
+                save_file(&out_path.join("ramble.hpp"), &wrapped_contents)?;
+            };
         }
     };
 

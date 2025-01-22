@@ -15,6 +15,14 @@ impl Packet {
     pub fn add_field(&mut self, f: Field) {
         self.fields.push(f);
     }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn fields(&self) -> &Vec<Field> {
+        &self.fields
+    }
 }
 
 #[derive(Debug)]
@@ -31,5 +39,13 @@ pub struct Field {
 impl Field {
     pub fn new(name: String, field_type: FieldType) -> Self {
         Field { name, field_type }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn field_type(&self) -> &FieldType {
+        &self.field_type
     }
 }

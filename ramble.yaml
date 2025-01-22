@@ -12,8 +12,3 @@ packets:
     fields:
       - record_id: u8
       - record_value: u8
-enums:
-  - name: mode
-    - A
-    - B
-    - C
