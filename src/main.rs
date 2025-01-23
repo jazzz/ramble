@@ -14,7 +14,7 @@ mod utils;
 
 use packet::Packet;
 use parse::Scanner;
-use targets::{CodeGenerator, TargetC};
+use targets::{CodeGenerator, Lang, TargetC};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -82,6 +82,13 @@ fn add_preamble(mut content: Vec<String>) -> Vec<String> {
     preamble
 }
 
+fn generate_target<T: Lang>(packets: &[Packet], output_file: &PathBuf) -> Result<()> {
+    let contents = CodeGenerator {}.to_code::<T>(packets);
+    let wrapped_contents = add_preamble(contents);
+    save_file(&output_file, &wrapped_contents)?;
+    Ok(())
+}
+
 fn main() -> Result<()> {
     info!("Starting Ramble");
 
@@ -115,12 +122,9 @@ fn main() -> Result<()> {
                 Ok(pkts) => pkts,
             };
 
-            let c = CodeGenerator {};
             if target_c {
                 info!("Generating C/C++ Target");
-                let contents = c.to_code::<TargetC>(&packets);
-                let wrapped_contents = add_preamble(contents);
-                save_file(&out_path.join("ramble.hpp"), &wrapped_contents)?;
+                generate_target::<TargetC>(&packets, &out_path.join("ramble.hpp"))?;
             };
         }
     };

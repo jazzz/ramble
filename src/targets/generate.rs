@@ -10,7 +10,7 @@ pub trait Lang {
 pub struct CodeGenerator {}
 
 impl CodeGenerator {
-    pub fn to_code<T: Lang>(&self, packets: &Vec<Packet>) -> Vec<String> {
+    pub fn to_code<T: Lang>(&self, packets: &[Packet]) -> Vec<String> {
         let mut out_lines: Vec<String> = Vec::new();
 
         // Generate Indiviudal packet definitions
@@ -21,7 +21,7 @@ impl CodeGenerator {
         }
 
         // Generate Serialization and helper functions
-        out_lines.append(&mut T::gen_boilerplate(packets.as_slice()));
+        out_lines.append(&mut T::gen_boilerplate(packets));
 
         out_lines
     }
