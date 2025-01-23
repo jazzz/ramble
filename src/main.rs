@@ -10,6 +10,7 @@ mod consts;
 mod packet;
 mod parse;
 mod targets;
+mod utils;
 
 use packet::Packet;
 use parse::Scanner;
