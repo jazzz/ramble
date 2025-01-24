@@ -1,16 +1,11 @@
-mod packet;
-mod parse;
-mod targets;
-
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use paris::{error, info};
 use std::io::Read;
 use std::{fs::File, path::Path};
 
-use packet::Packet;
-use parse::Scanner;
-use targets::{CodeGenerator, TargetC};
+use ramble::targets::{CodeGenerator, TargetC};
+use ramble::{Packet, Scanner};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
