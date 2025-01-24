@@ -4,3 +4,4 @@ pub use parse::Scanner;
 mod packet;
 mod parse;
 pub mod targets;
+mod util;
