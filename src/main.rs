@@ -1,20 +1,16 @@
-use anyhow::Result;
-use clap::{Parser, Subcommand};
-use paris::{error, info};
-use std::fs;
-use std::io::{Read, Write};
-use std::path::PathBuf;
-use std::{fs::File, path::Path};
-
-mod consts;
 mod packet;
 mod parse;
 mod targets;
-mod utils;
+
+use anyhow::Result;
+use clap::{Parser, Subcommand};
+use paris::{error, info};
+use std::io::Read;
+use std::{fs::File, path::Path};
 
 use packet::Packet;
 use parse::Scanner;
-use targets::{CodeGenerator, Lang, TargetC};
+use targets::{CodeGenerator, TargetC};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -56,39 +52,6 @@ fn load_ramble_file(filename: &str) -> Result<Vec<Packet>> {
     Ok(pkts)
 }
 
-fn save_file(filename: &PathBuf, contents: &[String]) -> Result<()> {
-    // Ensure entire path exists
-    fs::create_dir_all(filename.parent().expect("invalid parent path"))?;
-
-    let mut file = File::create(filename)?;
-
-    // TODO: avoid all these copies
-    let content_str = contents.join("\n");
-    file.write_all(content_str.as_bytes())?;
-
-    info!("File written to {}", filename.display().to_string());
-    Ok(())
-}
-
-fn add_preamble(mut content: Vec<String>) -> Vec<String> {
-    let mut preamble = vec![
-        "///////////////////////////////////////////////".into(),
-        "// This file was generated using Ramble.".into(),
-        "///////////////////////////////////////////////".into(),
-        "".into(),
-    ];
-
-    preamble.append(&mut content);
-    preamble
-}
-
-fn generate_target<T: Lang>(packets: &[Packet], output_file: &PathBuf) -> Result<()> {
-    let contents = CodeGenerator {}.to_code::<T>(packets);
-    let wrapped_contents = add_preamble(contents);
-    save_file(&output_file, &wrapped_contents)?;
-    Ok(())
-}
-
 fn main() -> Result<()> {
     info!("Starting Ramble");
 
@@ -122,9 +85,15 @@ fn main() -> Result<()> {
                 Ok(pkts) => pkts,
             };
 
+            let code_generator = CodeGenerator::new(out_path);
+
             if target_c {
                 info!("Generating C/C++ Target");
-                generate_target::<TargetC>(&packets, &out_path.join("ramble.hpp"))?;
+                let files_written = code_generator.to_code::<TargetC>(&packets)?;
+
+                for file in files_written {
+                    info!("    file written: {:#?}", file);
+                }
             };
         }
     };

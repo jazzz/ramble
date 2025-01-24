@@ -1,4 +1,7 @@
-#[derive(Debug)]
+use anyhow::{bail, Result};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize)]
 pub struct Packet {
     name: String,
     fields: Vec<Field>,
@@ -15,22 +18,25 @@ impl Packet {
     pub fn add_field(&mut self, f: Field) {
         self.fields.push(f);
     }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn fields(&self) -> &Vec<Field> {
-        &self.fields
-    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum FieldType {
     Uint8T,
 }
 
-#[derive(Debug)]
+impl TryFrom<&str> for FieldType {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self> {
+        match value {
+            "Uint8T" => Ok(Self::Uint8T),
+            _ => bail!("Unknown FieldType"),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct Field {
     name: String,
     field_type: FieldType,
@@ -39,13 +45,5 @@ pub struct Field {
 impl Field {
     pub fn new(name: String, field_type: FieldType) -> Self {
         Field { name, field_type }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn field_type(&self) -> &FieldType {
-        &self.field_type
     }
 }

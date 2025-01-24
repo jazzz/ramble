@@ -1,0 +1,74 @@
+///////////////////////////////////////////////
+// This file was generated using Ramble.
+///////////////////////////////////////////////
+
+
+/* Struct Definitions */
+
+{{#each packets as |pkt|}}
+#pragma pack(push, 1)
+typedef struct {{upper_camel pkt.name}}
+{
+    uint8_t seq;
+    {{#each pkt.fields as |field|}}
+    {{map_type field.field_type}} {{field.name}};
+    {{/each}}
+} {{upper_camel pkt.name}}_t;
+#pragma pack(pop)
+
+{{/each}}
+
+/* Wrapping packet definitions */
+
+enum PacketTypes
+{
+    {{#each packets as |pkt|}}
+    {{upper pkt.name}} = {{@index}},
+    {{/each}}
+};
+
+typedef struct Packet
+{
+    uint8_t packet_type;
+    union
+    {
+        {{#each packets as |pkt|}}
+        {{upper_camel pkt.name}}_t {{pkt.name}};
+        {{/each}}
+    };
+} Packet_t;
+
+/* Serialization helper functions */
+
+template <typename T>
+size_t serialize(uint8_t *buf, T *pkt)
+{
+    memcpy(buf, pkt, sizeof(T));
+    return sizeof(T);
+}
+
+{{!-- template <> --}}
+size_t serialize<Packet_t>(uint8_t *buf, Packet_t *pkt)
+{
+    size_t bytes_written = 0;
+    buf[bytes_written++] = pkt->packet_type;
+
+    switch (static_cast<PacketTypes>(pkt->packet_type))
+    {
+    {{#each packets as |pkt|}}
+    {{#if (skip_first @index)}}
+
+    {{/if}}
+    case {{upper pkt.name}}:
+        bytes_written += serialize(&buf[bytes_written], &pkt->{{pkt.name}});
+        break;
+    {{/each}}
+    }
+    return bytes_written;
+}
+
+
+Packet_t *deserialize(uint8_t *buf)
+{
+    return (Packet_t *)buf;
+}
