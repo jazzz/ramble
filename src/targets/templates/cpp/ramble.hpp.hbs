@@ -1,7 +1,9 @@
 ///////////////////////////////////////////////
 // This file was generated using Ramble.
 ///////////////////////////////////////////////
-
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 /* Struct Definitions */
 
@@ -9,7 +11,6 @@
 #pragma pack(push, 1)
 typedef struct {{upper_camel pkt.name}}
 {
-    uint8_t seq;
     {{#each pkt.fields as |field|}}
     {{map_type field.field_type}} {{field.name}};
     {{/each}}
@@ -47,7 +48,7 @@ size_t serialize(uint8_t *buf, T *pkt)
     return sizeof(T);
 }
 
-{{!-- template <> --}}
+template <>
 size_t serialize<Packet_t>(uint8_t *buf, Packet_t *pkt)
 {
     size_t bytes_written = 0;
@@ -66,7 +67,6 @@ size_t serialize<Packet_t>(uint8_t *buf, Packet_t *pkt)
     }
     return bytes_written;
 }
-
 
 Packet_t *deserialize(uint8_t *buf)
 {
