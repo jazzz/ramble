@@ -18,6 +18,8 @@ jobs:
   build_and_test:
     name: Rust project
     runs-on: ubuntu-latest
+    env:
+      GENERATED_DIRECTORY: /workspaces/generated/
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -27,9 +29,6 @@ jobs:
         with:
           command: build
           args: --release --all-features
-
-      - name: Define outputpath
-        run: export GENERATED_DIRECTORY="./generated/"
 
       - name: Generate C++ Ramble files
         run: ./target/release/ramble generate  --C -o "$GENERATED_DIRECTORY"
@@ -46,7 +45,7 @@ jobs:
         run: cmake --build . -v
 
       - name: Run tests with Catch2
-        run: ./tests/cpp/run_tests.sh
+        run: ./tests/cpp/run_tests.sh "$GENERATED_DIRECTORY"
 
 
   clippy_check:
