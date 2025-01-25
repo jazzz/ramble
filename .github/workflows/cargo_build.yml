@@ -42,10 +42,8 @@ jobs:
         working-directory: ./tests/cpp
         run: cmake --build . -v
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-
+      - name: Run tests with Catch2
+        run: ./tests/cpp/run_tests.sh
 
 
   clippy_check:
