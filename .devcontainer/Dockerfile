@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/rust:1-1-bookworm
+FROM "image": "mcr.microsoft.com/devcontainers/rust:1-1-bookworm",
 
 # Install dependencies
 RUN apt-get update \
@@ -6,5 +6,7 @@ RUN apt-get update \
     libusb-1.0-0 libssl-dev libudev-dev pkg-config \
     catch2 \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts
+
+RUN git clone
 
 CMD [ "/bin/bash" ]

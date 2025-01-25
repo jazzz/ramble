@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.hbs": "handlebars"
+    },
+    "[handlebars]": {
+        "editor.formatOnSave": false
+    }
+}
