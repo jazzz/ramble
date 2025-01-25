@@ -19,7 +19,7 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     env:
-      GENERATED_DIRECTORY: ./generated
+      GENERATED_DIRECTORY: ./tests/cpp
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -40,9 +40,9 @@ jobs:
         working-directory: ./tests/cpp
         run: cmake . 
 
-      - name: Build with Cmake
+      - name: Build CppTests with Cmake
         working-directory: ./tests/cpp
-        run: cmake --build . -v
+        run: cmake --build .
 
       - name: Run tests with Catch2
         run: ./tests/cpp/run_tests.sh "$GENERATED_DIRECTORY"
