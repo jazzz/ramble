@@ -27,9 +27,21 @@ jobs:
         with:
           command: build
           args: --release --all-features
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.16.x'
+      - name: Use cmake
+        run: cmake .
+
+      - name: Use cmake
+        run: cmake --version
+
       - uses: actions-rs/cargo@v1
         with:
           command: test
+
+
 
   clippy_check:
     runs-on: ubuntu-latest
