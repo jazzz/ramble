@@ -19,7 +19,7 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     env:
-      GENERATED_DIRECTORY: /workspace/ramble/ramble/generated
+      GENERATED_DIRECTORY: ./generated
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
