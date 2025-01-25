@@ -83,7 +83,7 @@ fn main() -> Result<()> {
             let code_generator = CodeGenerator::new(out_path);
 
             if target_c {
-                info!("Generating C/C++ Target");
+                info!("Generating C/C++ Target to {:?}", out_path);
                 let files_written = code_generator.to_code::<TargetC>(&packets)?;
 
                 for file in files_written {
