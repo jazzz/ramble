@@ -39,7 +39,7 @@ jobs:
         run: cmake ./tests/cpp
 
       - name: Use cmake
-        run: cmake --build ./tests/cpp
+        run: cmake --build ./tests/cpp -v
 
       - uses: actions-rs/cargo@v1
         with:
