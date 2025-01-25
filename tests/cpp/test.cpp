@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include "../../generated/ramble.hpp"
 
 TEST_CASE("Roundtrip serialization", "[serialize]")
