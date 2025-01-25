@@ -31,8 +31,13 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake catch2
 
-      - name: Use cmake
-        run: cmake ./tests/cpp &&  cmake --build . -v
+      - name: Configure Cmake
+        working-directory: ./tests/cpp
+        run: cmake . 
+.
+      - name: Build with Cmake
+        working-directory: ./tests/cpp
+        run: cmake --build . -v
 
       - uses: actions-rs/cargo@v1
         with:
