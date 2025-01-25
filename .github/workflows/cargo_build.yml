@@ -34,7 +34,7 @@ jobs:
       - name: Configure Cmake
         working-directory: ./tests/cpp
         run: cmake . 
-.
+
       - name: Build with Cmake
         working-directory: ./tests/cpp
         run: cmake --build . -v
