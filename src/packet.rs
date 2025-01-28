@@ -1,5 +1,6 @@
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize)]
 pub struct Packet {
@@ -45,5 +46,32 @@ pub struct Field {
 impl Field {
     pub fn new(name: String, field_type: FieldType) -> Self {
         Field { name, field_type }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct RambleConfig {
+    pub params: HashMap<String, String>,
+    pub messages: Vec<Packet>,
+}
+
+impl RambleConfig {
+    pub fn default() -> Self {
+        Self {
+            params: HashMap::new(),
+            messages: vec![],
+        }
+    }
+
+    pub fn add_msgs(&mut self, msgs: Vec<Packet>) {
+        self.messages = msgs;
+    }
+
+    pub fn add_msg(&mut self, msg: Packet) {
+        self.messages.push(msg);
+    }
+
+    pub fn add_param(&mut self, key: String, val: String) {
+        self.params.insert(key, val);
     }
 }

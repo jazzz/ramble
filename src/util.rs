@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::io::Read;
 use std::{fs::File, path::Path};
 
-use crate::{Packet, Scanner};
+use crate::{RambleConfig, Scanner};
 
 fn read_file<P: AsRef<Path>>(filepath: P) -> Result<String> {
     let mut f = File::open(filepath)?;
@@ -11,10 +11,9 @@ fn read_file<P: AsRef<Path>>(filepath: P) -> Result<String> {
     Ok(file_data)
 }
 
-pub fn load_ramble_file<P: AsRef<Path>>(filepath: P) -> Result<Vec<Packet>> {
+pub fn load_ramble_file<P: AsRef<Path>>(filepath: P) -> Result<RambleConfig> {
     let scanner = Scanner {};
     let cfg = read_file(filepath)?;
-    let pkts = scanner.parse_yaml(&cfg)?;
 
-    Ok(pkts)
+    scanner.parse_yaml(&cfg)
 }

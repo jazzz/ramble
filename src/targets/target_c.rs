@@ -9,6 +9,7 @@ use std::path::PathBuf;
 use super::generate::Lang;
 use super::FileObject;
 use crate::packet::{FieldType, Packet};
+use crate::RambleConfig;
 
 handlebars_helper!(upper_camel: |x: str| x.to_case(Case::UpperCamel));
 handlebars_helper!(upper: |x: str| x.to_case(Case::UpperSnake));
@@ -29,7 +30,7 @@ impl Lang for TargetC {
         }
     }
 
-    fn render_template(packets: &[Packet]) -> anyhow::Result<Vec<FileObject>> {
+    fn render_template(rfg: &RambleConfig) -> anyhow::Result<Vec<FileObject>> {
         let path = PathBuf::from("src/targets/templates/cpp/ramble.hpp.hbs");
 
         let filename = path
@@ -50,7 +51,7 @@ impl Lang for TargetC {
         handlebars.register_helper("skip_first", Box::new(skip_first));
 
         let mut data = Map::<String, Value>::new();
-        data.insert("packets".into(), to_json(&packets));
+        data.insert("packets".into(), to_json(&rfg.messages));
 
         Ok(vec![FileObject {
             filename,

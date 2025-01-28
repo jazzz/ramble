@@ -1,4 +1,4 @@
-pub use packet::Packet;
+pub use packet::RambleConfig;
 pub use parse::Scanner;
 pub use util::load_ramble_file;
 

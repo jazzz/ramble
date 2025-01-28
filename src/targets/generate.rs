@@ -4,11 +4,12 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use super::FileObject;
-use crate::packet::{FieldType, Packet};
+use crate::packet::FieldType;
+use crate::RambleConfig;
 
 pub trait Lang {
     fn type_map(ft: &FieldType) -> &str;
-    fn render_template(packets: &[Packet]) -> Result<Vec<FileObject>>;
+    fn render_template(packets: &RambleConfig) -> Result<Vec<FileObject>>;
 }
 
 pub struct CodeGenerator<'a> {
@@ -20,9 +21,9 @@ impl<'a> CodeGenerator<'a> {
         CodeGenerator { dest }
     }
 
-    pub fn to_code<T: Lang>(&self, packets: &[Packet]) -> Result<Vec<PathBuf>> {
+    pub fn to_code<T: Lang>(&self, rfg: &RambleConfig) -> Result<Vec<PathBuf>> {
         // Call out to the target to generate the new files
-        let file_objs = T::render_template(packets)?;
+        let file_objs = T::render_template(rfg)?;
 
         let mut written_files = vec![];
 

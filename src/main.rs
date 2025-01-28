@@ -5,7 +5,7 @@ use std::io::Read;
 use std::{fs::File, path::Path};
 
 use ramble::targets::{CodeGenerator, TargetC};
-use ramble::{Packet, Scanner};
+use ramble::{RambleConfig, Scanner};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -39,12 +39,10 @@ fn load_file(filepath: &str) -> Result<String> {
     Ok(file_data)
 }
 
-fn load_ramble_file(filename: &str) -> Result<Vec<Packet>> {
+fn load_ramble_file(filename: &str) -> Result<RambleConfig> {
     let scanner = Scanner {};
     let cfg = load_file(filename)?;
-    let pkts = scanner.parse_yaml(&cfg)?;
-
-    Ok(pkts)
+    scanner.parse_yaml(&cfg)
 }
 
 fn main() -> Result<()> {
@@ -75,7 +73,7 @@ fn main() -> Result<()> {
 
             // Load Ramble file
             let filename = file.as_deref().unwrap_or("ramble.yaml");
-            let packets = match load_ramble_file(filename) {
+            let ramble_config = match load_ramble_file(filename) {
                 Err(e) => panic!("{} is invalid - {} ", filename, e),
                 Ok(pkts) => pkts,
             };
@@ -84,7 +82,7 @@ fn main() -> Result<()> {
 
             if target_c {
                 info!("Generating C/C++ Target to {:?}", out_path);
-                let files_written = code_generator.to_code::<TargetC>(&packets)?;
+                let files_written = code_generator.to_code::<TargetC>(&ramble_config)?;
 
                 for file in files_written {
                     info!("    file written: {:#?}", file);

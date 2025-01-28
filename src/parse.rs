@@ -1,11 +1,11 @@
 use crate::packet::{Field, FieldType, Packet};
+use crate::RambleConfig;
 use anyhow::{Error, Result};
 use log::{debug, warn};
 use paris::info;
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
 
-const KEY_VERSION: &str = "version";
 const KEY_PACKETS: &str = "packets";
 const KEY_NAME: &str = "name";
 const KEY_PROPS: &str = "properties";
@@ -14,40 +14,46 @@ const KEY_FIELDS: &str = "fields";
 pub struct Scanner {}
 
 impl Scanner {
-    pub fn parse_yaml(&self, cfg_string: &str) -> Result<Vec<Packet>> {
+    pub fn parse_yaml(&self, cfg_string: &str) -> Result<RambleConfig> {
         let docs = YamlLoader::load_from_str(cfg_string)?;
         let doc = &docs[0];
 
-        let param_version = doc[KEY_VERSION].as_i64();
-        if param_version.is_none() {
-            return Err(Error::msg("Missing Parameter (Version)"));
+        let mut ramble_config = RambleConfig::default();
+
+        if let Some(params) = doc.as_hash() {
+            for (k, v) in params.iter() {
+                Self::process_root_param(&mut ramble_config, k, v)?;
+            }
         }
 
-        match doc[KEY_VERSION].as_i64() {
-            None => Err(Error::msg("Missing Parameter (Version)")),
-            Some(1) => self.process_yaml_v1(doc),
-            Some(v) => Err(Error::msg(format!("Version:{} is not supported", v))),
+        let version = match ramble_config.params.get("version") {
+            Some(v) => v,
+            None => return Err(Error::msg("Missing Parameter (Version)")),
+        };
+
+        if version == "1" {
+            Self::process_yaml_v1(ramble_config, doc)
+        } else {
+            Err(Error::msg(format!("Version:{} is not supported", version)))
         }
     }
 
-    fn process_yaml_v1(&self, doc: &Yaml) -> Result<Vec<Packet>> {
+    fn process_yaml_v1(mut ramble_config: RambleConfig, doc: &Yaml) -> Result<RambleConfig> {
         info!("Ramble::v1 detected");
-
-        let mut packets = vec![];
 
         if let Some(pkts) = &(doc[KEY_PACKETS]).as_vec() {
             for pkt in pkts.iter() {
-                if let Ok(p) = self.process_struct(pkt) {
+                if let Ok(p) = Self::process_struct(pkt) {
                     debug!("Adding packet: {:?}", p);
-                    packets.push(p);
+                    ramble_config.add_msg(p);
                 };
             }
         }
 
-        Ok(packets)
+        Ok(ramble_config)
     }
 
-    fn process_struct(&self, doc: &Yaml) -> Result<Packet> {
+    fn process_struct(doc: &Yaml) -> Result<Packet> {
         let name = doc[KEY_NAME]
             .as_str()
             .expect("Struct entry contains no name");
@@ -78,5 +84,29 @@ impl Scanner {
         }
 
         Ok(pkt)
+    }
+
+    fn process_root_param(
+        ramble_config: &mut RambleConfig,
+        key: &Yaml,
+        value: &Yaml,
+    ) -> Result<()> {
+        let key_str = key
+            .as_str()
+            .ok_or(Error::msg(format!("Key must be a string: found {:?}", key)))?;
+
+        // Ignore some values
+        if key_str == "packets" {
+            return Ok(());
+        }
+
+        let val_str = value.as_str().ok_or(Error::msg(format!(
+            "Value must be string values: found {:?}",
+            key
+        )))?;
+
+        ramble_config.add_param(key_str.to_string(), val_str.to_string());
+
+        Ok(())
     }
 }
