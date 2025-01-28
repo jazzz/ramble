@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 use super::generate::Lang;
 use super::FileObject;
-use crate::packet::{FieldType, Packet};
+use crate::packet::FieldType;
 use crate::RambleConfig;
 
 handlebars_helper!(upper_camel: |x: str| x.to_case(Case::UpperCamel));
