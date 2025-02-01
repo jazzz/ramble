@@ -4,8 +4,7 @@ use paris::{error, info};
 use std::io::Read;
 use std::{fs::File, path::Path};
 
-use ramble::codegen::{CodeGenerator, TargetC, TargetRust};
-use ramble::{RambleConfig, Scanner};
+use ramble::{CodeGenerator, RambleConfig, Scanner, TargetC, TargetRust};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]

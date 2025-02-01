@@ -1,8 +1,5 @@
-pub use packet::RambleConfig;
-pub use parse::Scanner;
-pub use util::load_ramble_file;
+mod codegen;
+mod config;
 
-pub mod codegen;
-mod packet;
-mod parse;
-mod util;
+pub use codegen::{CodeGenerator, TargetC, TargetRust};
+pub use config::{RambleConfig, Scanner};

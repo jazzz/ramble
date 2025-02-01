@@ -4,8 +4,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use super::FileObject;
-use crate::packet::FieldType;
-use crate::RambleConfig;
+use crate::config::packet::{FieldType, RambleConfig};
 
 pub trait Lang {
     fn type_map(ft: &FieldType) -> &str;
