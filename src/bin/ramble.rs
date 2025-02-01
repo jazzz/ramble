@@ -1,10 +1,9 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use paris::{error, info};
-use std::io::Read;
-use std::{fs::File, path::Path};
+use std::path::Path;
 
-use ramble::{CodeGenerator, RambleConfig, Scanner, TargetC, TargetRust};
+use ramble::{load_ramble_file, CodeGenerator, TargetC, TargetRust};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -32,19 +31,6 @@ enum Commands {
         /// Output a Rust Library
         target_rust: bool,
     },
-}
-
-fn load_file(filepath: &str) -> Result<String> {
-    let mut f = File::open(filepath)?;
-    let mut file_data = String::new();
-    f.read_to_string(&mut file_data)?;
-    Ok(file_data)
-}
-
-fn load_ramble_file(filename: &str) -> Result<RambleConfig> {
-    let scanner = Scanner {};
-    let cfg = load_file(filename)?;
-    scanner.parse_yaml(&cfg)
 }
 
 fn main() -> Result<()> {
