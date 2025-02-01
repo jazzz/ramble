@@ -18,7 +18,7 @@ The focus of this project is on microcontrollers and other environments where th
 
 # Message Schema
 
-Message definitions 
+Messages must be well defined with concrete types so they can be parsed. Since no assumptions can be made about the messages, developers must provide unambigious definitions about the messages.
 
 ```yaml
 #Example Ramble File
@@ -36,7 +36,7 @@ packets:
       - sensor_id: u8
       - sensor_value: u8
 
-tagged_unions:                  # This is the default configuratio
+tagged_unions:                  # This is the default configuration
   - name: packets               # for now. A wrapping struct with a 
     auto_all: true              # tag is generated for all packets
 
