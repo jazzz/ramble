@@ -35,12 +35,11 @@ pub enum DeserializeError {
 #[derive(PartialEq, Debug, BinRead, BinWrite)]
 struct {{upper_camel pkt.name}} {
     {{#each pkt.fields as |field|}}
-    {{field.name}}: {{map_type field.field_type}}, 
+    {{field.name}}: {{map_type field.field_type}},
     {{/each}}
 }
 
 {{/each}}
-
 #[derive(Debug)]
 enum MsgTypes {
     {{#each packets as |pkt|}}
@@ -70,7 +69,6 @@ impl TryFrom<TagValue> for MsgTypes {
         }
     }
 }
-
 
 #[derive(Debug, PartialEq)]
 enum Message {
@@ -144,13 +142,11 @@ impl BinWrite for Message {
         self.write_options(writer, &binwrite::WriterOption::default())
     }
 }
+{{#each packets as |pkt|}}
 
- {{#each packets as |pkt|}}
- impl From<{{upper_camel pkt.name}}> for Message {
+impl From<{{upper_camel pkt.name}}> for Message {
     fn from(value: {{upper_camel pkt.name}}) -> Self {
         Message::{{upper_camel pkt.name}}(value)
     }
 }
-  
 {{/each}}
-
