@@ -1,10 +1,10 @@
-use crate::packet::{Field, FieldType, Packet};
-use crate::RambleConfig;
 use anyhow::{Error, Result};
 use log::{debug, warn};
 use paris::info;
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
+
+use super::packet::{Field, FieldType, Packet, RambleConfig};
 
 const KEY_PACKETS: &str = "packets";
 const KEY_NAME: &str = "name";

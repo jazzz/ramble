@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::io::Read;
 use std::{fs::File, path::Path};
 
-use crate::{RambleConfig, Scanner};
+use super::{RambleConfig, Scanner};
 
 fn read_file<P: AsRef<Path>>(filepath: P) -> Result<String> {
     let mut f = File::open(filepath)?;
