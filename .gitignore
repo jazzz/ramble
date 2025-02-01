@@ -1,6 +1,4 @@
 /target
-**/bin
-
 
 # Cmake
 CMakeLists.txt.user
