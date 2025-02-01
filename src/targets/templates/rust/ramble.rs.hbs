@@ -1,0 +1,156 @@
+///////////////////////////////////////////////
+// This file was generated using Ramble.
+///////////////////////////////////////////////
+use binread::{BinRead, BinReaderExt};
+use binwrite::BinWrite;
+use std::{convert::TryFrom, io::Cursor};
+
+type TagValue = u8;
+
+#[derive(thiserror::Error, Debug)]
+pub enum SerializeError {
+    // #[error("could not serialize `{0}` ")]
+    // BadSerialize(String),
+    #[error("could not serialize with binread ")]
+    Binread(#[from] binread::Error),
+    // #[error("unknown")]
+    // Unknown,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum DeserializeError {
+    // #[error("could not serialize `{0}` ")]
+    // BadDeserialize(String),
+    #[error("could not deserialize with binread ")]
+    Binwrite(#[from] binread::Error),
+    #[error("unknown type `{0}` ")]
+    UnknownType(i32),
+    // #[error("unknown")]
+    // Unknown,
+}
+
+/* Struct Definitions */
+
+{{#each packets as |pkt|}}
+#[derive(PartialEq, Debug, BinRead, BinWrite)]
+struct {{upper_camel pkt.name}} {
+    {{#each pkt.fields as |field|}}
+    {{field.name}}: {{map_type field.field_type}}, 
+    {{/each}}
+}
+
+{{/each}}
+
+#[derive(Debug)]
+enum MsgTypes {
+    {{#each packets as |pkt|}}
+    {{upper_camel pkt.name}} = {{@index}},
+    {{/each}}
+}
+
+impl MsgTypes {
+    fn get_tag_for(v: &Message) -> TagValue {
+        match v {
+            {{#each packets as |pkt|}}
+            Message::{{upper_camel pkt.name}}(_) => MsgTypes::{{upper_camel pkt.name}} as TagValue,
+            {{/each}}
+        }
+    }
+}
+
+impl TryFrom<TagValue> for MsgTypes {
+    type Error = DeserializeError;
+
+    fn try_from(v: TagValue) -> Result<Self, Self::Error> {
+        match v {
+            {{#each packets as |pkt|}}
+            x if x == Self::{{upper_camel pkt.name}} as TagValue => Ok(Self::{{upper_camel pkt.name}}),
+            {{/each}}
+            _ => Err(DeserializeError::UnknownType(v.into())),
+        }
+    }
+}
+
+
+#[derive(Debug, PartialEq)]
+enum Message {
+    {{#each packets as |pkt|}}
+    {{upper_camel pkt.name}}({{upper_camel pkt.name}}),
+    {{/each}}
+}
+
+impl Message {
+    #![allow(dead_code)]
+    pub fn to_bytes(&self) -> Result<Vec<u8>, SerializeError> {
+        let mut buf = vec![];
+        if let Err(e) = self.write(&mut buf) {
+            return Err(SerializeError::Binread(binread::Error::Io(e)));
+        }
+
+        Ok(buf)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, DeserializeError> {
+        let mut reader = Cursor::new(bytes);
+        let m: Message = reader.read_ne()?;
+
+        Ok(m)
+    }
+}
+
+impl BinRead for Message {
+    type Args = ();
+
+    fn read_options<R: std::io::Read + std::io::Seek>(
+        reader: &mut R,
+        options: &binread::ReadOptions,
+        args: Self::Args,
+    ) -> binread::BinResult<Self> {
+        let tag = u8::read_options(reader, options, args)?;
+
+        let msg_type =
+            MsgTypes::try_from(tag).map_err(|_| binread::Error::NoVariantMatch { pos: 1 })?;
+
+        let m = match msg_type {
+            {{#each packets as |pkt|}}
+            MsgTypes::{{upper_camel pkt.name}} => Message::from({{upper_camel pkt.name}}::read_options(reader, options, args)?),
+            {{/each}}
+        };
+
+        Ok(m)
+    }
+}
+
+impl BinWrite for Message {
+    fn write_options<W: std::io::Write>(
+        &self,
+        writer: &mut W,
+        options: &binwrite::WriterOption,
+    ) -> std::io::Result<()> {
+        let tag = MsgTypes::get_tag_for(self);
+
+        tag.write_options(writer, options)?;
+
+        match self {
+            {{#each packets as |pkt|}}
+            Message::{{upper_camel pkt.name}}(m) => m.write(writer),
+            {{/each}}
+        }?;
+
+        Ok(())
+    }
+
+    fn write<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        self.write_options(writer, &binwrite::WriterOption::default())
+    }
+}
+
+ {{#each packets as |pkt|}}
+ impl From<{{upper_camel pkt.name}}> for Message {
+    fn from(value: {{upper_camel pkt.name}}) -> Self {
+        Message::{{upper_camel pkt.name}}(value)
+    }
+}
+  
+{{/each}}
+
