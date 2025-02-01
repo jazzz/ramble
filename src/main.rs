@@ -4,7 +4,7 @@ use paris::{error, info};
 use std::io::Read;
 use std::{fs::File, path::Path};
 
-use ramble::targets::{CodeGenerator, TargetC};
+use ramble::targets::{CodeGenerator, TargetC, TargetRust};
 use ramble::{RambleConfig, Scanner};
 
 #[derive(Parser, Debug)]
@@ -29,6 +29,9 @@ enum Commands {
         #[arg(long = "C")]
         /// Output a C/C++ Library
         target_c: bool,
+        #[arg(long = "rust")]
+        /// Output a Rust Library
+        target_rust: bool,
     },
 }
 
@@ -65,6 +68,7 @@ fn main() -> Result<()> {
             file,
             output_dir,
             target_c,
+            target_rust,
         } => {
             let out_path = match output_dir.as_deref() {
                 Some(o) => Path::new(o),
@@ -83,6 +87,15 @@ fn main() -> Result<()> {
             if target_c {
                 info!("Generating C/C++ Target to {:?}", out_path);
                 let files_written = code_generator.to_code::<TargetC>(&ramble_config)?;
+
+                for file in files_written {
+                    info!("    file written: {:#?}", file);
+                }
+            };
+
+            if target_rust {
+                info!("Generating Rust Target to {:?}", out_path);
+                let files_written = code_generator.to_code::<TargetRust>(&ramble_config)?;
 
                 for file in files_written {
                     info!("    file written: {:#?}", file);
