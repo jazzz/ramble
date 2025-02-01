@@ -12,24 +12,26 @@ use crate::packet::FieldType;
 use crate::RambleConfig;
 
 handlebars_helper!(upper_camel: |x: str| x.to_case(Case::UpperCamel));
-handlebars_helper!(snake: |x: str| x.to_case(Case::Snake));
+handlebars_helper!(upper: |x: str| x.to_case(Case::UpperSnake));
 
 handlebars_helper!(map_type: |x: str| {
     let ty = FieldType::try_from(x).map_err(|e| RenderErrorReason::Other(e.to_string()) )?; // TODO: Improve error handling
-    TargetRust::type_map(&ty).to_string()
+    TargetC::type_map(&ty).to_string()
 });
 
-pub struct TargetRust {}
+handlebars_helper!(skip_first: |x: u64| x > 0);
 
-impl Lang for TargetRust {
+pub struct TargetC {}
+
+impl Lang for TargetC {
     fn type_map(ft: &FieldType) -> &str {
         match ft {
-            FieldType::Uint8T => "u8",
+            FieldType::Uint8T => "uint8_t",
         }
     }
 
     fn render_template(rfg: &RambleConfig) -> anyhow::Result<Vec<FileObject>> {
-        let path = PathBuf::from("src/targets/templates/rust/ramble.rs.hbs");
+        let path = PathBuf::from("src/codegen/templates/cpp/ramble.hpp.hbs");
 
         let filename = path
             .file_stem()
@@ -44,8 +46,9 @@ impl Lang for TargetRust {
         )?;
 
         handlebars.register_helper("upper_camel", Box::new(upper_camel));
-        handlebars.register_helper("upper", Box::new(snake));
+        handlebars.register_helper("upper", Box::new(upper));
         handlebars.register_helper("map_type", Box::new(map_type));
+        handlebars.register_helper("skip_first", Box::new(skip_first));
 
         let mut data = Map::<String, Value>::new();
         data.insert("packets".into(), to_json(&rfg.messages));
