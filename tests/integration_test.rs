@@ -1,6 +1,6 @@
 use ramble::{
+    codegen::{CodeGenerator, TargetC},
     load_ramble_file,
-    targets::{CodeGenerator, TargetC},
 };
 use std::{path::PathBuf, process::Command};
 use tempfile::tempdir;
