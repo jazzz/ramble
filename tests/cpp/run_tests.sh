@@ -6,12 +6,12 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 if [[ ! -z "$1" ]]; then
     # Expand passed in directory incase it was a relative path
-    # GENERATED_DIRECTORY is exported so it is available in CMAKE
-    export GENERATED_DIRECTORY="$(realpath $1)"
+    # RAMBLE_GENERATED_DIRECTORY is exported so it is available in CMAKE
+    export RAMBLE_GENERATED_DIRECTORY="$(realpath $1)"
 fi 
 
-if [[ -z "${GENERATED_DIRECTORY}" ]]; then
-    echo "envvar:GENERATED_DIRECTORY must be set before tests can be compiled; try passing it in."
+if [[ -z "${RAMBLE_GENERATED_DIRECTORY}" ]]; then
+    echo "envvar:RAMBLE_GENERATED_DIRECTORY must be set before tests can be compiled; try passing it in."
     exit 1
 fi
 
@@ -20,7 +20,7 @@ if [[ -z "${RAMBLE_TEST_DIR}" ]]; then
     RAMBLE_TEST_DIR=$SCRIPT_DIR
 fi 
 
-echo "Using GENERATED_DIRECTORY=$GENERATED_DIRECTORY"
+echo "Using RAMBLE_GENERATED_DIRECTORY=$RAMBLE_GENERATED_DIRECTORY"
 echo "Using RAMBLE_TEST_DIR=$RAMBLE_TEST_DIR"
 
 

@@ -13,7 +13,7 @@ fn run_cpp_tests() {
         .expect("bad code generation");
 
     let test_results = Command::new("bash")
-        .env("GENERATED_DIRECTORY", dest.path())
+        .env("RAMBLE_GENERATED_DIRECTORY", dest.path())
         .env("RUST_BACKTRACE", "full")
         .arg("-c")
         .arg(" ./tests/cpp/run_tests.sh")
