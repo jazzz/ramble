@@ -6,6 +6,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 if [[ ! -z "$1" ]]; then
     # Expand passed in directory incase it was a relative path
+    # GENERATED_DIRECTORY is exported so it is available in CMAKE
     export GENERATED_DIRECTORY="$(realpath $1)"
 fi 
 
@@ -14,9 +15,17 @@ if [[ -z "${GENERATED_DIRECTORY}" ]]; then
     exit 1
 fi
 
-echo "Using GENERATED_DIRECTORY=$GENERATED_DIRECTORY"
+if [[ -z "${RAMBLE_TEST_DIR}" ]]; then
+    echo "assume SCRIPT"
+    RAMBLE_TEST_DIR=$SCRIPT_DIR
+fi 
 
-cmake $SCRIPT_DIR
+echo "Using GENERATED_DIRECTORY=$GENERATED_DIRECTORY"
+echo "Using RAMBLE_TEST_DIR=$RAMBLE_TEST_DIR"
+
+
+# ============== Build the Tests ================
+cmake $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -24,7 +33,7 @@ if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
 export CMAKE_VERBOSE_MAKEFILE=True
-cmake --build  $SCRIPT_DIR
+cmake --build  $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -32,7 +41,9 @@ if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
 
-$SCRIPT_DIR/bin/tests
+# ============== Run Test Binary ================
+
+$RAMBLE_TEST_DIR/bin/tests
 
 retVal=$?
 if [ $retVal -ne 0 ]; then

@@ -19,7 +19,6 @@ add_executable(tests test.cpp)
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tests PRIVATE "$ENV{GENERATED_DIRECTORY}")
 
-message(STATUS ">>$ENV{GENERATED_DIRECTORY}")
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
 include(Catch)
