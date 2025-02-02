@@ -1,29 +1,39 @@
 ###  This script builds and then runs the cpp tests
 ###  Invoke 'run_script.sh <PATH_TO_RAMBLE.HPP>'
 
+# Get script directory to get the correct directory to pass to cmake, regardless of where the script is executed from
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 if [[ ! -z "$1" ]]; then
-    GENERATED_DIRECTORY=$1
+    # Expand passed in directory incase it was a relative path
+    # RAMBLE_GENERATED_DIRECTORY is exported so it is available in CMAKE
+    export RAMBLE_GENERATED_DIRECTORY="$(realpath $1)"
 fi 
 
-if [[ -z "${GENERATED_DIRECTORY}" ]]; then
-    echo "envvar:GENERATED_DIRECTORY must be set before tests can be compiled; try passing it in."
+if [[ -z "${RAMBLE_GENERATED_DIRECTORY}" ]]; then
+    echo "envvar:RAMBLE_GENERATED_DIRECTORY must be set before tests can be compiled; try passing it in."
     exit 1
 fi
 
-echo "Using GENERATED_DIRECTORY=$GENERATED_DIRECTORY"
+if [[ -z "${RAMBLE_TEST_DIR}" ]]; then
+    echo "assume SCRIPT"
+    RAMBLE_TEST_DIR=$SCRIPT_DIR
+fi 
 
-cd ./tests/cpp/
+echo "Using RAMBLE_GENERATED_DIRECTORY=$RAMBLE_GENERATED_DIRECTORY"
+echo "Using RAMBLE_TEST_DIR=$RAMBLE_TEST_DIR"
 
 
-cmake .
+# ============== Build the Tests ================
+cmake $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failed to configure cmake" 
     exit $retVal
 fi
-
-cmake --build .
+export CMAKE_VERBOSE_MAKEFILE=True
+cmake --build  $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
@@ -31,7 +41,9 @@ if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
 
-./bin/tests
+# ============== Run Test Binary ================
+
+$RAMBLE_TEST_DIR/bin/tests
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
