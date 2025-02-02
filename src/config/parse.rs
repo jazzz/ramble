@@ -1,6 +1,6 @@
 use anyhow::{Error, Result};
-use log::{debug, warn};
-use paris::info;
+use log::debug;
+use paris::{info, warn};
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
 
@@ -100,10 +100,16 @@ impl Scanner {
             return Ok(());
         }
 
-        let val_str = value.as_str().ok_or(Error::msg(format!(
-            "Value must be string values: found {:?}",
-            key
-        )))?;
+        let val_str = match value.as_str() {
+            Some(s) => s,
+            None => {
+                warn!(
+                    "Ignoring configuration key:{} - this value handler is not implemented  ",
+                    key_str
+                );
+                return Ok(());
+            }
+        };
 
         ramble_config.add_param(key_str.to_string(), val_str.to_string());
 
