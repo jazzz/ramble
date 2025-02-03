@@ -38,9 +38,7 @@ echo "Using RAMBLE_TEST_DIR=$RAMBLE_TEST_DIR"
 # ============== Generate C Target ================
 cargo run generate -f $RAMBLE_FILE -o $RAMBLE_GENERATED_DIRECTORY --C
 
-
 # ============== Build the Tests ================
-
 cmake -S $RAMBLE_TEST_DIR -B $RAMBLE_TEST_DIR
 
 retVal=$?
@@ -67,7 +65,6 @@ if [ $retVal -ne 0 ]; then
     echo "Tests failed" 
     exit $retVal
 fi
-
 
 # Cleanup temp folder on 
 function cleanup {      
