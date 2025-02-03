@@ -492,6 +492,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "tempfile",
+ "thiserror",
  "yaml-rust2",
 ]
 

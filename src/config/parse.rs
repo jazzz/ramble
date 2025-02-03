@@ -1,9 +1,11 @@
-use anyhow::{Error, Result};
+use std::fmt::format;
+
 use log::debug;
 use paris::{info, warn};
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
 
+use super::error::ConfigError;
 use super::packet::{Field, FieldType, Packet, RambleConfig};
 
 const KEY_PACKETS: &str = "packets";
@@ -14,7 +16,7 @@ const KEY_FIELDS: &str = "fields";
 pub struct Scanner {}
 
 impl Scanner {
-    pub fn parse_yaml(&self, cfg_string: &str) -> Result<RambleConfig> {
+    pub fn parse_yaml(&self, cfg_string: &str) -> Result<RambleConfig, ConfigError> {
         let docs = YamlLoader::load_from_str(cfg_string)?;
         let doc = &docs[0];
 
@@ -28,32 +30,34 @@ impl Scanner {
 
         let version = match ramble_config.params.get("version") {
             Some(v) => v,
-            None => return Err(Error::msg("Missing Parameter (Version)")),
+            None => return Err(ConfigError::MissingParameter("version".into())),
         };
 
         if version == "1" {
             Self::process_yaml_v1(ramble_config, doc)
         } else {
-            Err(Error::msg(format!("Version:{} is not supported", version)))
+            Err(ConfigError::VersionNotSupported(version.clone()))
         }
     }
 
-    fn process_yaml_v1(mut ramble_config: RambleConfig, doc: &Yaml) -> Result<RambleConfig> {
+    fn process_yaml_v1(
+        mut ramble_config: RambleConfig,
+        doc: &Yaml,
+    ) -> Result<RambleConfig, ConfigError> {
         info!("Ramble::v1 detected");
 
         if let Some(pkts) = &(doc[KEY_PACKETS]).as_vec() {
             for pkt in pkts.iter() {
-                if let Ok(p) = Self::process_struct(pkt) {
-                    debug!("Adding packet: {:?}", p);
-                    ramble_config.add_msg(p);
-                };
+                let p = Self::process_struct(pkt)?;
+                debug!("Adding packet: {:?}", p);
+                ramble_config.add_msg(p);
             }
         }
 
         Ok(ramble_config)
     }
 
-    fn process_struct(doc: &Yaml) -> Result<Packet> {
+    fn process_struct(doc: &Yaml) -> Result<Packet, ConfigError> {
         let name = doc[KEY_NAME]
             .as_str()
             .expect("Struct entry contains no name");
@@ -71,13 +75,24 @@ impl Scanner {
                     for (field_id, field_type) in h {
                         debug!(" Field_Id:{:?}  Field_Type:{:?}", field_id, field_type);
 
-                        let s = field_id.as_str().expect("BAD field name");
-                        let ft = match field_type.as_str().expect("BAD field type") {
+                        let ids = field_id.as_str().ok_or(ConfigError::UnexpectedType(
+                            "key".into(),
+                            "String".into(),
+                            format!("{:?}", field),
+                        ))?;
+
+                        let fts = field_type.as_str().ok_or(ConfigError::UnexpectedType(
+                            format!("fieldType for {}", ids),
+                            "String".into(),
+                            format!("{:?}", field_type),
+                        ))?;
+
+                        let ft = match fts {
                             "u8" => FieldType::Uint8T,
-                            _ => return Err(Error::msg("Unrecognized fieldType")),
+                            _ => return Err(ConfigError::InvalidFieldType(fts.into())),
                         };
 
-                        pkt.add_field(Field::new(s.into(), ft));
+                        pkt.add_field(Field::new(ids.into(), ft));
                     }
                 }
             }
@@ -90,10 +105,11 @@ impl Scanner {
         ramble_config: &mut RambleConfig,
         key: &Yaml,
         value: &Yaml,
-    ) -> Result<()> {
-        let key_str = key
-            .as_str()
-            .ok_or(Error::msg(format!("Key must be a string: found {:?}", key)))?;
+    ) -> Result<(), ConfigError> {
+        let key_str = key.as_str().ok_or(ConfigError::BadFormat(format!(
+            "Key must be a string found {:?}",
+            key
+        )))?;
 
         // Ignore some values
         if key_str == "packets" {
