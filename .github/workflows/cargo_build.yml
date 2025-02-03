@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build_and_test:
-    name: Unittests
+    name: Cargo(Unittests)
     runs-on: ubuntu-latest
     env:
       RAMBLE_GENERATED_DIRECTORY: ./tests/cpp

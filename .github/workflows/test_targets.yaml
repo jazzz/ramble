@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   tests_cpp:
-    name: Tests(C++)
+    name: Test(C++)
     runs-on: ubuntu-latest
     env:
       RAMBLE_GENERATED_DIRECTORY: ./tests/cpp
