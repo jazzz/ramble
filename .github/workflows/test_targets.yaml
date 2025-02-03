@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_test:
-    name: Unittests
+  tests_cpp:
+    name: Tests(C++)
     runs-on: ubuntu-latest
     env:
       RAMBLE_GENERATED_DIRECTORY: ./tests/cpp
@@ -30,16 +30,5 @@ jobs:
           command: build
           args: --release --all-features
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --lib --bins
-
-
-  clippy_check:
-      name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
+      - name: Run tests with Catch2
+        run: ./tests/cpp/run_gen_tests.sh ./tests/ramble.yaml
