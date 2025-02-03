@@ -1,4 +1,4 @@
-name: Test(Cargo)
+name: Targets
 
 on:
   push:
