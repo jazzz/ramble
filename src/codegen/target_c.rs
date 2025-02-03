@@ -30,6 +30,9 @@ impl Lang for TargetC {
     }
 
     fn render_template(rfg: &RambleConfig) -> anyhow::Result<Vec<FileObject>> {
+        // This makes the assumption that the hbs files are available to the binary at runtime, and is not a
+        // sustainable solution. Currently this also requires that the executable is called from the project
+        // root, so they relative path works.
         let path = PathBuf::from("src/codegen/templates/cpp/ramble.hpp.hbs");
 
         let filename = path
