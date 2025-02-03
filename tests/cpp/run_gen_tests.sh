@@ -40,15 +40,17 @@ cargo run generate -f $RAMBLE_FILE -o $RAMBLE_GENERATED_DIRECTORY --C
 
 
 # ============== Build the Tests ================
-cmake $RAMBLE_TEST_DIR
+
+cmake -S $RAMBLE_TEST_DIR -B $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failed to configure cmake" 
     exit $retVal
 fi
+
 export CMAKE_VERBOSE_MAKEFILE=True
-cmake --build  $RAMBLE_TEST_DIR
+cmake --build $RAMBLE_TEST_DIR
 
 retVal=$?
 if [ $retVal -ne 0 ]; then
