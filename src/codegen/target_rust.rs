@@ -27,6 +27,10 @@ impl Lang for TargetRust {
             FieldType::Uint16T => "u16",
             FieldType::Uint32T => "u32",
             FieldType::Uint64T => "u64",
+            FieldType::Sint8T => "i8",
+            FieldType::Sint16T => "i16",
+            FieldType::Sint32T => "i32",
+            FieldType::Sint64T => "i64",
         }
     }
 

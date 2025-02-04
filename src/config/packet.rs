@@ -27,6 +27,10 @@ pub enum FieldType {
     Uint16T,
     Uint32T,
     Uint64T,
+    Sint8T,
+    Sint16T,
+    Sint32T,
+    Sint64T,
 }
 
 impl TryFrom<&str> for FieldType {
@@ -38,6 +42,10 @@ impl TryFrom<&str> for FieldType {
             "Uint16T" => Ok(Self::Uint16T),
             "Uint32T" => Ok(Self::Uint32T),
             "Uint64T" => Ok(Self::Uint64T),
+            "Sint8T" => Ok(Self::Uint8T),
+            "Sint16T" => Ok(Self::Uint16T),
+            "Sint32T" => Ok(Self::Uint32T),
+            "Sint64T" => Ok(Self::Uint64T),
             _ => bail!("Unknown FieldType"),
         }
     }

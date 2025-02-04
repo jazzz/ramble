@@ -89,6 +89,10 @@ impl Scanner {
                             "u16" => FieldType::Uint16T,
                             "u32" => FieldType::Uint32T,
                             "u64" => FieldType::Uint64T,
+                            "i8" => FieldType::Uint8T,
+                            "i16" => FieldType::Uint16T,
+                            "i32" => FieldType::Uint32T,
+                            "i64" => FieldType::Uint64T,
                             _ => return Err(ConfigError::InvalidFieldType(fts.into())),
                         };
 

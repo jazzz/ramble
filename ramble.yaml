@@ -1,15 +1,15 @@
 # Example Ramble File
 ---
-version: "1"      # Required
+version: "1"              # Required
 namespace: thisnamespace
 packets:
-  - name: hello   # Required
+  - name: hello           # Required
     properties:
       - crc
     fields:
       - seq: u16
       - flags: u8
-  - name: primitive   # Required
+  - name: change_record   # Required
     fields:
       - record_id: u64
-      - record_value: u32
+      - record_value: i32
