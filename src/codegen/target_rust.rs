@@ -24,6 +24,9 @@ impl Lang for TargetRust {
     fn type_map(ft: &FieldType) -> &str {
         match ft {
             FieldType::Uint8T => "u8",
+            FieldType::Uint16T => "u16",
+            FieldType::Uint32T => "u32",
+            FieldType::Uint64T => "u64",
         }
     }
 
