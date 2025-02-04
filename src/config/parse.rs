@@ -83,18 +83,8 @@ impl Scanner {
                             format!("{:?}", field_type),
                         ))?;
 
-                        // TODO: remove duplicate code.
-                        let ft = match fts {
-                            "u8" => FieldType::U8,
-                            "u16" => FieldType::U16,
-                            "u32" => FieldType::U32,
-                            "u64" => FieldType::U64,
-                            "i8" => FieldType::I8,
-                            "i16" => FieldType::U16,
-                            "i32" => FieldType::I32,
-                            "i64" => FieldType::I64,
-                            _ => return Err(ConfigError::InvalidFieldType(fts.into())),
-                        };
+                        let ft = FieldType::try_from(fts)
+                            .map_err(|e| ConfigError::InvalidFieldType(fts.into()))?;
 
                         pkt.add_field(Field::new(ids.into(), ft));
                     }
