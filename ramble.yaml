@@ -7,9 +7,9 @@ packets:
     properties:
       - crc
     fields:
-      - seq: u16
-      - flags: u8
+      - seq: U16
+      - flags: U8
   - name: change_record   # Required
     fields:
-      - record_id: u64
-      - record_value: i32
+      - record_id: U64
+      - record_value: I32

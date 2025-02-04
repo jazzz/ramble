@@ -186,7 +186,7 @@ mod tests {
         let fails = Scanner {}.parse_yaml(&func("notatype"));
         assert!(fails.is_err(), "error not thrown on invalid type");
 
-        let fails = Scanner {}.parse_yaml(&func("u8"));
+        let fails = Scanner {}.parse_yaml(&func("U8"));
         assert!(fails.is_ok(), "error thrown on valid type");
     }
 }

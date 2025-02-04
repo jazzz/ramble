@@ -7,8 +7,8 @@ packets:
     properties:
       - crc
     fields:
-      - seq: u8 
+      - seq: U8 
   - name: change_record   # Required
     fields:
-      - record_id: u8
-      - record_value: u8
+      - record_id: U8
+      - record_value: U8
