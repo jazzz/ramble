@@ -83,8 +83,7 @@ impl Scanner {
                             format!("{:?}", field_type),
                         ))?;
 
-                        let ft = FieldType::try_from(fts)
-                            .map_err(|e| ConfigError::InvalidFieldType(fts.into()))?;
+                        let ft = FieldType::try_from(fts)?;
 
                         pkt.add_field(Field::new(ids.into(), ft));
                     }

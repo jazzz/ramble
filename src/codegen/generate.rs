@@ -1,14 +1,16 @@
-use anyhow::Result;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use super::error::CodegenError;
 use super::FileObject;
 use crate::config::packet::{FieldType, RambleConfig};
 
+type ErrorType = CodegenError;
+
 pub trait Lang {
     fn type_map(ft: &FieldType) -> &str;
-    fn render_template(packets: &RambleConfig) -> Result<Vec<FileObject>>;
+    fn render_template(packets: &RambleConfig) -> Result<Vec<FileObject>, ErrorType>;
 }
 
 pub struct CodeGenerator<'a> {
@@ -20,7 +22,7 @@ impl<'a> CodeGenerator<'a> {
         CodeGenerator { dest }
     }
 
-    pub fn to_code<T: Lang>(&self, rfg: &RambleConfig) -> Result<Vec<PathBuf>> {
+    pub fn to_code<T: Lang>(&self, rfg: &RambleConfig) -> Result<Vec<PathBuf>, ErrorType> {
         // Call out to the target to generate the new files
         let file_objs = T::render_template(rfg)?;
 
@@ -35,7 +37,7 @@ impl<'a> CodeGenerator<'a> {
         Ok(written_files)
     }
 
-    fn save_file(&self, filename: &Path, content_str: &str) -> Result<()> {
+    fn save_file(&self, filename: &Path, content_str: &str) -> Result<(), ErrorType> {
         // Ensure entire path exists
         fs::create_dir_all(filename.parent().expect("invalid parent path"))?;
 

@@ -1,6 +1,7 @@
-use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use super::error::ConfigError;
 
 #[derive(Debug, Serialize)]
 pub struct Packet {
@@ -35,9 +36,9 @@ pub enum FieldType {
 }
 
 impl TryFrom<&str> for FieldType {
-    type Error = anyhow::Error;
+    type Error = ConfigError;
 
-    fn try_from(value: &str) -> Result<Self> {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "U8" => Ok(Self::U8),
             "U16" => Ok(Self::U16),
@@ -47,7 +48,7 @@ impl TryFrom<&str> for FieldType {
             "I16" => Ok(Self::I16),
             "I32" => Ok(Self::I32),
             "I64" => Ok(Self::I64),
-            _ => bail!("Unknown FieldType"),
+            _ => Err(ConfigError::InvalidFieldType(value.into())),
         }
     }
 }

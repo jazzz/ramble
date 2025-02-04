@@ -1,4 +1,3 @@
-use anyhow::Context;
 use convert_case::{Case, Casing};
 use handlebars::handlebars_helper;
 use handlebars::{to_json, Handlebars, RenderErrorReason};
@@ -6,6 +5,7 @@ use serde_json::Map;
 use serde_json::Value;
 use std::path::PathBuf;
 
+use super::error::CodegenError;
 use super::generate::Lang;
 use super::FileObject;
 use crate::config::packet::{FieldType, RambleConfig};
@@ -34,19 +34,19 @@ impl Lang for TargetRust {
         }
     }
 
-    fn render_template(rfg: &RambleConfig) -> anyhow::Result<Vec<FileObject>> {
+    fn render_template(rfg: &RambleConfig) -> Result<Vec<FileObject>, CodegenError> {
         let path = PathBuf::from("src/codegen/templates/rust/ramble.rs.hbs");
 
         let filename = path
             .file_stem()
-            .context("unable to get filename from path")?
+            .ok_or(CodegenError::ProgramError("invalid template path".into()))?
             .to_os_string();
 
         let mut handlebars = Handlebars::new();
         handlebars.register_template_file(
             "src",
             path.to_str()
-                .context("Program Error: Check path variable ")?,
+                .ok_or(CodegenError::ProgramError("check template path".into()))?,
         )?;
 
         handlebars.register_helper("upper_camel", Box::new(upper_camel));
