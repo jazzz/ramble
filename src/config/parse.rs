@@ -85,14 +85,14 @@ impl Scanner {
 
                         // TODO: remove duplicate code.
                         let ft = match fts {
-                            "u8" => FieldType::Uint8T,
-                            "u16" => FieldType::Uint16T,
-                            "u32" => FieldType::Uint32T,
-                            "u64" => FieldType::Uint64T,
-                            "i8" => FieldType::Uint8T,
-                            "i16" => FieldType::Uint16T,
-                            "i32" => FieldType::Uint32T,
-                            "i64" => FieldType::Uint64T,
+                            "u8" => FieldType::U8,
+                            "u16" => FieldType::U16,
+                            "u32" => FieldType::U32,
+                            "u64" => FieldType::U64,
+                            "i8" => FieldType::I8,
+                            "i16" => FieldType::U16,
+                            "i32" => FieldType::I32,
+                            "i64" => FieldType::I64,
                             _ => return Err(ConfigError::InvalidFieldType(fts.into())),
                         };
 

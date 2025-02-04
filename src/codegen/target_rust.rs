@@ -23,14 +23,14 @@ pub struct TargetRust {}
 impl Lang for TargetRust {
     fn type_map(ft: &FieldType) -> &str {
         match ft {
-            FieldType::Uint8T => "u8",
-            FieldType::Uint16T => "u16",
-            FieldType::Uint32T => "u32",
-            FieldType::Uint64T => "u64",
-            FieldType::Sint8T => "i8",
-            FieldType::Sint16T => "i16",
-            FieldType::Sint32T => "i32",
-            FieldType::Sint64T => "i64",
+            FieldType::U8 => "u8",
+            FieldType::U16 => "u16",
+            FieldType::U32 => "u32",
+            FieldType::U64 => "u64",
+            FieldType::I8 => "i8",
+            FieldType::I16 => "i16",
+            FieldType::I32 => "i32",
+            FieldType::I64 => "i64",
         }
     }
 
