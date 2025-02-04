@@ -1,3 +1,4 @@
+mod error;
 mod generate;
 mod target_c;
 mod target_rust;
