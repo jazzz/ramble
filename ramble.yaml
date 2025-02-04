@@ -1,4 +1,4 @@
-#Example Ramble File
+# Example Ramble File
 ---
 version: "1"      # Required
 namespace: thisnamespace
@@ -7,8 +7,9 @@ packets:
     properties:
       - crc
     fields:
-      - seq: u8 
-  - name: change_record   # Required
+      - seq: u16
+      - flags: u8
+  - name: primitive   # Required
     fields:
-      - record_id: u8
-      - record_value: u8
+      - record_id: u64
+      - record_value: u32
