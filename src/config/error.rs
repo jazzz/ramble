@@ -2,7 +2,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
-    #[error("missing required paramter: {0}")]
+    #[error("{0}")]
+    IOError(#[from] std::io::Error),
+    #[error("missing required parameter: {0}")]
     MissingParameter(String),
     #[error("version:{0} is not supported")]
     VersionNotSupported(String),

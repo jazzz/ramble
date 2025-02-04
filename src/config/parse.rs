@@ -1,7 +1,7 @@
 use std::fmt::format;
 
-use log::debug;
-use paris::{info, warn};
+use log::{debug, info};
+use paris::warn;
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
 
@@ -44,8 +44,6 @@ impl Scanner {
         mut ramble_config: RambleConfig,
         doc: &Yaml,
     ) -> Result<RambleConfig, ConfigError> {
-        info!("Ramble::v1 detected");
-
         if let Some(pkts) = &(doc[KEY_PACKETS]).as_vec() {
             for pkt in pkts.iter() {
                 let p = Self::process_struct(pkt)?;
@@ -130,5 +128,59 @@ impl Scanner {
         ramble_config.add_param(key_str.to_string(), val_str.to_string());
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use crate::{CodeGenerator, TargetC};
+
+    use super::*;
+
+    #[test]
+    fn minimal_file() {
+        let filecontents = "version: '1'";
+
+        let ramble_config = Scanner {}.parse_yaml(filecontents).expect("should error");
+
+        println!("{:?}", ramble_config);
+
+        let outpath = Path::new("./generated/cpp");
+        let code_generator = CodeGenerator::new(outpath);
+
+        let files_written = code_generator.to_code::<TargetC>(&ramble_config).unwrap();
+        println!("{:?}", files_written);
+    }
+
+    #[test]
+    fn version_mismatch() {
+        let fails = Scanner {}.parse_yaml("version: '99'");
+        assert!(fails.is_err(), "error not thrown on bad version");
+
+        let succeeds = Scanner {}.parse_yaml("version: '1'");
+        assert!(succeeds.is_ok(), "error not thrown on good version");
+    }
+
+    #[test]
+    fn invalid_field() {
+        let func = |x| -> String {
+            let mut v = vec![];
+            v.push("version: '1'".into());
+            v.push("packets:".into());
+            v.push(" - name: hello".into());
+            v.push("   fields:".into());
+            v.push(format!("    - field: {}", x));
+
+            v.join("\n")
+        };
+
+        println!("{}", func("notatype"));
+        let fails = Scanner {}.parse_yaml(&func("notatype"));
+        assert!(fails.is_err(), "error not thrown on invalid type");
+
+        let fails = Scanner {}.parse_yaml(&func("u8"));
+        assert!(fails.is_ok(), "error thrown on valid type");
     }
 }
