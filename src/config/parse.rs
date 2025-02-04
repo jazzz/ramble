@@ -1,6 +1,4 @@
-use std::fmt::format;
-
-use log::{debug, info};
+use log::debug;
 use paris::warn;
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
@@ -85,8 +83,16 @@ impl Scanner {
                             format!("{:?}", field_type),
                         ))?;
 
+                        // TODO: remove duplicate code.
                         let ft = match fts {
                             "u8" => FieldType::Uint8T,
+                            "u16" => FieldType::Uint16T,
+                            "u32" => FieldType::Uint32T,
+                            "u64" => FieldType::Uint64T,
+                            "i8" => FieldType::Uint8T,
+                            "i16" => FieldType::Uint16T,
+                            "i32" => FieldType::Uint32T,
+                            "i64" => FieldType::Uint64T,
                             _ => return Err(ConfigError::InvalidFieldType(fts.into())),
                         };
 
