@@ -21,16 +21,17 @@ impl Packet {
     }
 }
 
+/// All currently supported types.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum FieldType {
-    Uint8T,
-    Uint16T,
-    Uint32T,
-    Uint64T,
-    Sint8T,
-    Sint16T,
-    Sint32T,
-    Sint64T,
+    U8,
+    U16,
+    U32,
+    U64,
+    I8,
+    I16,
+    I32,
+    I64,
 }
 
 impl TryFrom<&str> for FieldType {
@@ -38,14 +39,14 @@ impl TryFrom<&str> for FieldType {
 
     fn try_from(value: &str) -> Result<Self> {
         match value {
-            "Uint8T" => Ok(Self::Uint8T),
-            "Uint16T" => Ok(Self::Uint16T),
-            "Uint32T" => Ok(Self::Uint32T),
-            "Uint64T" => Ok(Self::Uint64T),
-            "Sint8T" => Ok(Self::Uint8T),
-            "Sint16T" => Ok(Self::Uint16T),
-            "Sint32T" => Ok(Self::Uint32T),
-            "Sint64T" => Ok(Self::Uint64T),
+            "U8" => Ok(Self::U8),
+            "U16" => Ok(Self::U16),
+            "U32" => Ok(Self::U32),
+            "U64" => Ok(Self::U64),
+            "I8" => Ok(Self::I8),
+            "I16" => Ok(Self::I16),
+            "I32" => Ok(Self::I32),
+            "I64" => Ok(Self::I64),
             _ => bail!("Unknown FieldType"),
         }
     }

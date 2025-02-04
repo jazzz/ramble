@@ -25,14 +25,14 @@ pub struct TargetC {}
 impl Lang for TargetC {
     fn type_map(ft: &FieldType) -> &str {
         match ft {
-            FieldType::Uint8T => "uint8_t",
-            FieldType::Uint16T => "uint16_t",
-            FieldType::Uint32T => "uint32_t",
-            FieldType::Uint64T => "uint64_t",
-            FieldType::Sint8T => "int8_t",
-            FieldType::Sint16T => "int16_t",
-            FieldType::Sint32T => "int32_t",
-            FieldType::Sint64T => "int64_t",
+            FieldType::U8 => "uint8_t",
+            FieldType::U16 => "uint16_t",
+            FieldType::U32 => "uint32_t",
+            FieldType::U64 => "uint64_t",
+            FieldType::I8 => "int8_t",
+            FieldType::I16 => "int16_t",
+            FieldType::I32 => "int32_t",
+            FieldType::I64 => "int64_t",
         }
     }
 

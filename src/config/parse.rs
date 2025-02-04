@@ -83,18 +83,8 @@ impl Scanner {
                             format!("{:?}", field_type),
                         ))?;
 
-                        // TODO: remove duplicate code.
-                        let ft = match fts {
-                            "u8" => FieldType::Uint8T,
-                            "u16" => FieldType::Uint16T,
-                            "u32" => FieldType::Uint32T,
-                            "u64" => FieldType::Uint64T,
-                            "i8" => FieldType::Uint8T,
-                            "i16" => FieldType::Uint16T,
-                            "i32" => FieldType::Uint32T,
-                            "i64" => FieldType::Uint64T,
-                            _ => return Err(ConfigError::InvalidFieldType(fts.into())),
-                        };
+                        let ft = FieldType::try_from(fts)
+                            .map_err(|e| ConfigError::InvalidFieldType(fts.into()))?;
 
                         pkt.add_field(Field::new(ids.into(), ft));
                     }
@@ -186,7 +176,7 @@ mod tests {
         let fails = Scanner {}.parse_yaml(&func("notatype"));
         assert!(fails.is_err(), "error not thrown on invalid type");
 
-        let fails = Scanner {}.parse_yaml(&func("u8"));
+        let fails = Scanner {}.parse_yaml(&func("U8"));
         assert!(fails.is_ok(), "error thrown on valid type");
     }
 }
