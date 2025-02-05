@@ -1,12 +1,10 @@
-use std::fmt::format;
-
 use log::debug;
 use paris::warn;
 use yaml_rust2::Yaml::Hash;
 use yaml_rust2::{Yaml, YamlLoader};
 
 use super::error::ConfigError;
-use super::packet::{Field, FieldType, Packet, RambleConfig};
+use super::packet::{Field, Packet, RambleConfig};
 
 const KEY_PACKETS: &str = "packets";
 const KEY_NAME: &str = "name";
