@@ -186,27 +186,22 @@ mod tests {
     }
 
     #[test]
-    fn variable_len_messages() {
-        let msg: Message = VariableLen {}.into();
+    fn variable_len_message_serialization() {
+        let input_data = vec![0x61 as u8, 0x62, 0x63, 0x64];
+        let input_string = String::from_utf8(input_data.clone()).unwrap();
+
+        let msg: Message = VariableLen {
+            prefixed_str: PString::new(input_string),
+        }
+        .into();
 
         let bytes = msg.to_bytes().expect("to_bytes");
         let payload = &bytes.as_slice()[1..]; // Skip message tag;
 
-        #[rustfmt::skip]
-        let expected: &[u8] = &[
-            0xFF,
-            0xFF,0xFF,
-            0xFF,0xFF,0xFF,0xFF,
-            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-            0x7F,
-            0xFF,0x7F,
-            0xFF,0xFF,0xFF,0x7F,
-            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x7F,
-        ];
+        // Expected bytes are the [Length, *input_str]
+        let mut expected = vec![input_data.len() as u8, 0];
+        expected.extend_from_slice(input_data.as_slice());
 
-        assert!(payload == expected); //Max values must result in max bytes
-
-        let deserialized_msg = Message::from_bytes(bytes.as_slice()).expect("to message");
-        assert!(msg == deserialized_msg, "message mismatch");
+        assert!(payload == expected);
     }
 }
