@@ -4,6 +4,7 @@
 use binread::{BinRead, BinReaderExt};
 use binwrite::BinWrite;
 use std::{convert::TryFrom, io::Cursor};
+use std::str::Utf8Error;
 
 type TagValue = u8;
 
@@ -19,8 +20,8 @@ pub enum SerializeError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum DeserializeError {
-    // #[error("could not serialize `{0}` ")]
-    // BadDeserialize(String),
+    #[error("non utfbytes detect: {0}")]
+    UtfError(#[from] Utf8Error),
     #[error("could not deserialize with binread ")]
     Binwrite(#[from] binread::Error),
     #[error("unknown type `{0}` ")]
