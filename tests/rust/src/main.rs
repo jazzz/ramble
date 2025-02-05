@@ -5,10 +5,7 @@ fn main() {}
 #[cfg(test)]
 mod tests {
 
-    use std::{
-        io::{Cursor, Read},
-        u8,
-    };
+    use std::{io::Cursor, u8};
 
     use binread::BinRead;
     use binwrite::BinWrite;
@@ -52,7 +49,7 @@ mod tests {
         // compare values
         assert!(obj == derserialzied_obj, "obj mismatch");
         assert!(buf == other_buf, "bytes mismatch");
-        assert!(buf == [0x61, 0x62, 0x63, 0x64]);
+        assert!(buf == [0x04, 0x00, 0x61, 0x62, 0x63, 0x64]);
     }
 
     /// Tests that PString serializes and deserializes properly
