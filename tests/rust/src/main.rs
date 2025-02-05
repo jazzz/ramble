@@ -5,9 +5,85 @@ fn main() {}
 #[cfg(test)]
 mod tests {
 
-    use std::u8;
+    use std::{
+        io::{Cursor, Read},
+        u8,
+    };
+
+    use binread::BinRead;
+    use binwrite::BinWrite;
 
     use crate::generated::*;
+
+    #[test]
+    fn pstruct_nominal() {
+        let input: String = "abcd".into();
+        let mut ps = PString::new(input.clone());
+
+        let inner = ps.get_str().expect("get_str");
+        assert!(input.as_str() == inner, "strings don't match");
+
+        let new_input: String = "efg".into();
+        let size = ps.set_str(new_input.clone());
+
+        assert!(size == new_input.len() as Strlen);
+    }
+
+    /// Tests that PString serializes and deserializes properly
+    #[test]
+    fn pstring_round_trip() {
+        let raw_bytes = vec![0x61, 0x62, 0x63, 0x64]; // "abcd"
+        let input = String::from_utf8(raw_bytes.clone()).expect("bad test setup");
+
+        let obj = PString::new(input.clone());
+
+        // Serialize PString
+        let mut buf: Vec<u8> = vec![];
+        obj.write(&mut buf).expect("bad writer");
+
+        // Deserialize back to object
+        let derserialzied_obj =
+            PString::read(&mut Cursor::new(buf.as_slice())).expect("deserializing");
+
+        // ReReserialize back to bytes
+        let mut other_buf: Vec<u8> = vec![];
+        obj.write(&mut other_buf).expect("bad writer");
+
+        // compare values
+        assert!(obj == derserialzied_obj, "obj mismatch");
+        assert!(buf == other_buf, "bytes mismatch");
+        assert!(buf == [0x61, 0x62, 0x63, 0x64]);
+    }
+
+    /// Tests that PString serializes and deserializes properly
+    #[test]
+    fn pstring_characterset() {
+        let some_index = 8;
+        let ascii_set = String::from(
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[]~",
+        );
+
+        let obj = PString::new(ascii_set.clone());
+
+        // Serialize PString
+        let mut buf: Vec<u8> = vec![];
+        obj.write(&mut buf).expect("bad writer");
+
+        // Deserialize back to object
+        let deserialized_obj =
+            PString::read(&mut Cursor::new(buf.as_slice())).expect("deserializing");
+
+        // compare values
+        assert!(obj == deserialized_obj, "obj mismatch");
+        assert!(
+            ascii_set.as_str() == obj.get_str().unwrap(),
+            "string mismatch"
+        );
+
+        buf[some_index] = b'0'; // Add Non UTFChars
+        let res = PString::read(&mut Cursor::new(buf.as_slice()));
+        assert!(res.is_err(), "no error thrown");
+    }
 
     #[test]
     fn round_trip() {
