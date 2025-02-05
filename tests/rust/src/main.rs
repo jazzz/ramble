@@ -1,0 +1,4 @@
+mod generated;
+
+fn main() {}
+

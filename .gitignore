@@ -16,3 +16,5 @@ CMakeUserPresets.json
 *.cmake
 *.tcl
 /tests/cpp/bin
+target
+tests/rust/src/generated/*.rs
