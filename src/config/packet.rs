@@ -63,6 +63,13 @@ impl Field {
     pub fn new(name: String, field_type: FieldType) -> Self {
         Field { name, field_type }
     }
+
+    pub fn try_from_config(field_id: &str, field_type: &str) -> Result<Self, ConfigError> {
+        Ok(Field::new(
+            field_id.into(),
+            FieldType::try_from(field_type)?,
+        ))
+    }
 }
 
 #[derive(Debug, Serialize)]

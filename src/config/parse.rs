@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use log::debug;
 use paris::warn;
 use yaml_rust2::Yaml::Hash;
@@ -11,6 +13,22 @@ const KEY_NAME: &str = "name";
 const KEY_PROPS: &str = "properties";
 const KEY_FIELDS: &str = "fields";
 
+enum SupportedVersion {
+    V1,
+}
+
+impl TryFrom<&str> for SupportedVersion {
+    type Error = ConfigError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if value == "1" {
+            return Ok(SupportedVersion::V1);
+        }
+
+        Err(ConfigError::VersionNotSupported(value.into()))
+    }
+}
+
 pub struct Scanner {}
 
 impl Scanner {
@@ -20,24 +38,28 @@ impl Scanner {
 
         let mut ramble_config = RambleConfig::default();
 
+        // Load root paramters first as they will affect parsing of the rest of the file.
         if let Some(params) = doc.as_hash() {
             for (k, v) in params.iter() {
                 Self::process_root_param(&mut ramble_config, k, v)?;
             }
         }
 
-        let version = match ramble_config.params.get("version") {
-            Some(v) => v,
-            None => return Err(ConfigError::MissingParameter("version".into())),
-        };
-
-        if version == "1" {
-            Self::process_yaml_v1(ramble_config, doc)
-        } else {
-            Err(ConfigError::VersionNotSupported(version.clone()))
+        match Self::parse_version(&ramble_config)? {
+            SupportedVersion::V1 => Self::process_yaml_v1(ramble_config, doc),
         }
     }
 
+    fn parse_version(ramble_config: &RambleConfig) -> Result<SupportedVersion, ConfigError> {
+        let version = ramble_config
+            .params
+            .get("version")
+            .ok_or(ConfigError::MissingParameter("version".into()))?;
+
+        SupportedVersion::try_from(version.as_str())
+    }
+
+    /// Parse the struct definitions using V1 logic.
     fn process_yaml_v1(
         mut ramble_config: RambleConfig,
         doc: &Yaml,
@@ -53,6 +75,7 @@ impl Scanner {
         Ok(ramble_config)
     }
 
+    /// Each struct in the definition file, needs to have its fields and params parsed.
     fn process_struct(doc: &Yaml) -> Result<Packet, ConfigError> {
         let name = doc[KEY_NAME]
             .as_str()
@@ -65,33 +88,35 @@ impl Scanner {
 
         let mut pkt = Packet::new(name);
 
+        // Feilds are stored as a Sequence(HashMap) to preserve order. This makes parsing more complex
+        // as the extra layer needs to be handled. It does seem like the yaml_rust2 implementation does
+        // preserve order in mappings, this is not defined in the spec (https://yaml.org/spec/1.2.2/#mapping)
         if let Some(fields) = doc[KEY_FIELDS].as_vec() {
             for field in fields.iter() {
-                if let Hash(h) = field {
-                    for (field_id, field_type) in h {
-                        debug!(" Field_Id:{:?}  Field_Type:{:?}", field_id, field_type);
-
-                        let ids = field_id.as_str().ok_or(ConfigError::UnexpectedType(
-                            "key".into(),
-                            "String".into(),
-                            format!("{:?}", field),
-                        ))?;
-
-                        let fts = field_type.as_str().ok_or(ConfigError::UnexpectedType(
-                            format!("fieldType for {}", ids),
-                            "String".into(),
-                            format!("{:?}", field_type),
-                        ))?;
-
-                        let ft = FieldType::try_from(fts)?;
-
-                        pkt.add_field(Field::new(ids.into(), ft));
+                if let Hash(hash_map) = field {
+                    if !hash_map.len() == 1 {
+                        return Err(ConfigError::BadFormat(
+                            "fields must be defined as a sequence of mapping types. check that every mapping has a preceeding '-'".into(),
+                        ));
                     }
+
+                    let (key, value) = hash_map.front().ok_or(ConfigError::ProgramError(
+                        "there must be 1 and only 1 field".into(),
+                    ))?;
+
+                    let field_struct = Self::process_field(key, value)?;
+                    pkt.add_field(field_struct);
                 }
             }
         }
 
         Ok(pkt)
+    }
+
+    fn process_field(i: &Yaml, f: &Yaml) -> Result<Field, ConfigError> {
+        let field_id = require_str(i)?;
+        let field_type = require_str(f)?;
+        Field::try_from_config(field_id, field_type)
     }
 
     fn process_root_param(
@@ -124,6 +149,13 @@ impl Scanner {
 
         Ok(())
     }
+}
+
+fn require_str(yaml: &Yaml) -> Result<&str, ConfigError> {
+    yaml.as_str().ok_or(ConfigError::UnexpectedType(
+        "String".into(),
+        format!("{:?}", yaml),
+    ))
 }
 
 #[cfg(test)]
