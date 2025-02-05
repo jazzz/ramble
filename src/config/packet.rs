@@ -33,6 +33,7 @@ pub enum FieldType {
     I16,
     I32,
     I64,
+    PString,
 }
 
 impl TryFrom<&str> for FieldType {
@@ -48,6 +49,7 @@ impl TryFrom<&str> for FieldType {
             "I16" => Ok(Self::I16),
             "I32" => Ok(Self::I32),
             "I64" => Ok(Self::I64),
+            "PString" => Ok(Self::PString),
             _ => Err(ConfigError::InvalidFieldType(value.into())),
         }
     }

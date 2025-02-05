@@ -184,4 +184,29 @@ mod tests {
         let deserialized_msg = Message::from_bytes(bytes.as_slice()).expect("to message");
         assert!(msg == deserialized_msg, "message mismatch");
     }
+
+    #[test]
+    fn variable_len_messages() {
+        let msg: Message = VariableLen {}.into();
+
+        let bytes = msg.to_bytes().expect("to_bytes");
+        let payload = &bytes.as_slice()[1..]; // Skip message tag;
+
+        #[rustfmt::skip]
+        let expected: &[u8] = &[
+            0xFF,
+            0xFF,0xFF,
+            0xFF,0xFF,0xFF,0xFF,
+            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+            0x7F,
+            0xFF,0x7F,
+            0xFF,0xFF,0xFF,0x7F,
+            0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x7F,
+        ];
+
+        assert!(payload == expected); //Max values must result in max bytes
+
+        let deserialized_msg = Message::from_bytes(bytes.as_slice()).expect("to message");
+        assert!(msg == deserialized_msg, "message mismatch");
+    }
 }

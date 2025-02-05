@@ -52,3 +52,4 @@ The following types are currently supported in `ramble.yaml` files
 | Category          |  Types   |
 | :---------------- | :------: |
 | numeric           |  `U8`, `U16` ,`U32`, `U64`, `I8`, `I16` ,`I32`, `I64`|
+| sequences         | `Pstring` |            

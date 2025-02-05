@@ -33,6 +33,7 @@ impl Lang for TargetC {
             FieldType::I16 => "int16_t",
             FieldType::I32 => "int32_t",
             FieldType::I64 => "int64_t",
+            FieldType::PString => unimplemented!(),
         }
     }
 
