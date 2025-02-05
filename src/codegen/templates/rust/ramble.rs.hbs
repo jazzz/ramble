@@ -33,15 +33,15 @@ pub enum DeserializeError {
 
 {{#each packets as |pkt|}}
 #[derive(PartialEq, Debug, BinRead, BinWrite)]
-struct {{upper_camel pkt.name}} {
+pub struct {{upper_camel pkt.name}} {
     {{#each pkt.fields as |field|}}
-    {{field.name}}: {{map_type field.field_type}},
+    pub {{field.name}}: {{map_type field.field_type}},
     {{/each}}
 }
 
 {{/each}}
 #[derive(Debug)]
-enum MsgTypes {
+pub enum MsgTypes {
     {{#each packets as |pkt|}}
     {{upper_camel pkt.name}} = {{@index}},
     {{/each}}
@@ -71,7 +71,7 @@ impl TryFrom<TagValue> for MsgTypes {
 }
 
 #[derive(Debug, PartialEq)]
-enum Message {
+pub enum Message {
     {{#each packets as |pkt|}}
     {{upper_camel pkt.name}}({{upper_camel pkt.name}}),
     {{/each}}

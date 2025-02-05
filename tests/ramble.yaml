@@ -7,8 +7,27 @@ packets:
     properties:
       - crc
     fields:
-      - seq: U8 
-  - name: change_record   # Required
+      - seq: U32 
+      - flags: U8
+
+  - name: bye   # Required
     fields:
-      - record_id: U8
-      - record_value: U8
+      - seq: U32
+      - flags: U8
+
+  - name: non_aligned   # Required
+    fields:
+      - seq: U32
+      - flags: U8
+      - extension: U16
+
+  - name: primitives   # Required
+    fields:
+      - u8: U8
+      - u16: U16
+      - u32: U32
+      - u64: U64
+      - i8: I8
+      - i16: I16
+      - i32: I32
+      - i64: I64  

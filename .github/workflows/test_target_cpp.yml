@@ -1,0 +1,30 @@
+name: Target(C++)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  # For a given workflow, if we push to the same PR, cancel all previous builds on that PR.
+  # If the push is not attached to a PR, we will cancel all builds on the same branch.
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  tests_cpp:
+    name: Test(C++)
+    runs-on: ubuntu-latest
+    env:
+      RAMBLE_GENERATED_DIRECTORY: ./tests/cpp
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Run tests with Catch2
+        run: ./tests/cpp/run_gen_tests.sh ./tests/ramble.yaml

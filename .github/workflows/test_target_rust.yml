@@ -1,4 +1,4 @@
-name: Targets
+name: Target(Rust)
 
 on:
   push:
@@ -15,16 +15,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tests_cpp:
-    name: Test(C++)
+  tests_rust:
+    name: Test(Cargo)
     runs-on: ubuntu-latest
     env:
-      RAMBLE_GENERATED_DIRECTORY: ./tests/cpp
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      RAMBLE_GENERATED_DIRECTORY: ./tests/rust/src
 
-      - name: Run tests with Catch2
-        run: ./tests/cpp/run_gen_tests.sh ./tests/ramble.yaml
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: ./tests/rust/run_gen_tests.sh ./tests/ramble.yaml
