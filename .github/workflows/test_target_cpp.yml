@@ -27,4 +27,4 @@ jobs:
           toolchain: stable
 
       - name: Run tests with Catch2
-        run: ./tests/cpp/run_gen_tests.sh ./tests/ramble.yaml
+        run: ./tests/cpp/run_gen_tests.sh ./tests/cpp/ramble.yaml
