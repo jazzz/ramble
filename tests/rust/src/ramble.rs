@@ -3,11 +3,8 @@
 ///////////////////////////////////////////////
 use binread::{BinRead, BinReaderExt};
 use binwrite::BinWrite;
-use std::{
-    convert::TryFrom,
-    io::Cursor,
-    str::{from_utf8, Utf8Error},
-};
+use std::{convert::TryFrom, io::Cursor};
+use std::str::Utf8Error;
 
 type TagValue = u8;
 
@@ -23,8 +20,6 @@ pub enum SerializeError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum DeserializeError {
-    // #[error("could not serialize `{0}` ")]
-    // BadDeserialize(String),
     #[error("non utfbytes detect: {0}")]
     UtfError(#[from] Utf8Error),
     #[error("could not deserialize with binread ")]
@@ -68,12 +63,18 @@ pub struct Primitives {
     pub i64: i64,
 }
 
+#[derive(PartialEq, Debug, BinRead, BinWrite)]
+pub struct VariableLen {
+    pub prefixed_str: PString,
+}
+
 #[derive(Debug)]
 pub enum MsgTypes {
     Hello = 0,
     Bye = 1,
     NonAligned = 2,
     Primitives = 3,
+    VariableLen = 4,
 }
 
 impl MsgTypes {
@@ -83,6 +84,7 @@ impl MsgTypes {
             Message::Bye(_) => MsgTypes::Bye as TagValue,
             Message::NonAligned(_) => MsgTypes::NonAligned as TagValue,
             Message::Primitives(_) => MsgTypes::Primitives as TagValue,
+            Message::VariableLen(_) => MsgTypes::VariableLen as TagValue,
         }
     }
 }
@@ -96,6 +98,7 @@ impl TryFrom<TagValue> for MsgTypes {
             x if x == Self::Bye as TagValue => Ok(Self::Bye),
             x if x == Self::NonAligned as TagValue => Ok(Self::NonAligned),
             x if x == Self::Primitives as TagValue => Ok(Self::Primitives),
+            x if x == Self::VariableLen as TagValue => Ok(Self::VariableLen),
             _ => Err(DeserializeError::UnknownType(v.into())),
         }
     }
@@ -107,6 +110,7 @@ pub enum Message {
     Bye(Bye),
     NonAligned(NonAligned),
     Primitives(Primitives),
+    VariableLen(VariableLen),
 }
 
 impl Message {
@@ -146,6 +150,7 @@ impl BinRead for Message {
             MsgTypes::Bye => Message::from(Bye::read_options(reader, options, args)?),
             MsgTypes::NonAligned => Message::from(NonAligned::read_options(reader, options, args)?),
             MsgTypes::Primitives => Message::from(Primitives::read_options(reader, options, args)?),
+            MsgTypes::VariableLen => Message::from(VariableLen::read_options(reader, options, args)?),
         };
 
         Ok(m)
@@ -167,6 +172,7 @@ impl BinWrite for Message {
             Message::Bye(m) => m.write(writer),
             Message::NonAligned(m) => m.write(writer),
             Message::Primitives(m) => m.write(writer),
+            Message::VariableLen(m) => m.write(writer),
         }?;
 
         Ok(())
@@ -200,6 +206,13 @@ impl From<Primitives> for Message {
         Message::Primitives(value)
     }
 }
+
+impl From<VariableLen> for Message {
+    fn from(value: VariableLen) -> Self {
+        Message::VariableLen(value)
+    }
+}
+
 
 // TODO: Parameterize string length to handle variable sized len field
 pub type Strlen = u16;
