@@ -58,7 +58,6 @@ mod tests {
     /// Tests that PString serializes and deserializes properly
     #[test]
     fn pstring_characterset() {
-        let some_index = 8;
         let ascii_set = String::from(
             "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[]~",
         );
@@ -80,9 +79,10 @@ mod tests {
             "string mismatch"
         );
 
-        buf[some_index] = b'0'; // Add Non UTFChars
-        let res = PString::read(&mut Cursor::new(buf.as_slice()));
-        assert!(res.is_err(), "no error thrown");
+        let some_index = 17;
+        buf[some_index] = 255; // Add Non UTFChars
+        let s = PString::read(&mut Cursor::new(buf.as_slice())).expect("message didn't parsing");
+        assert!(s.get_str().is_err(), "no error thrown on access");
     }
 
     #[test]
