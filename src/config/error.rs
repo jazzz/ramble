@@ -14,6 +14,8 @@ pub enum ConfigError {
     BadYaml(#[from] yaml_rust2::ScanError),
     #[error("file contains unexpected data: {0}")]
     BadFormat(String),
-    #[error("unexpected type for {0}. expected:{1} found:{2} ")]
-    UnexpectedType(String, String, String),
+    #[error("program error(this should not have been possible): {0}")]
+    ProgramError(String),
+    #[error("unexpected type: expected:{0} found:{1} ")]
+    UnexpectedType(String, String),
 }
