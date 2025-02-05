@@ -1,5 +1,9 @@
-[![Build](https://github.com/jazzz/ramble/actions/workflows/cargo_build.yml/badge.svg)](https://github.com/jazzz/ramble/actions/workflows/cargo_build.yml)
 ![Status](https://img.shields.io/badge/Project_status-PreAlpha-purple)
+[![Build](https://github.com/jazzz/ramble/actions/workflows/cargo_build.yml/badge.svg)](https://github.com/jazzz/ramble/actions/workflows/cargo_build.yml)
+[![Target(C++)](https://github.com/jazzz/ramble/actions/workflows/test_target_cpp.yml/badge.svg)](https://github.com/jazzz/ramble/actions/workflows/test_target_cpp.yml)
+[![Target(Rust)](https://github.com/jazzz/ramble/actions/workflows/test_target_rust.yml/badge.svg)](https://github.com/jazzz/ramble/actions/workflows/test_target_rust.yml)
+[![Lint(Clippy)](https://github.com/jazzz/ramble/actions/workflows/lint.yml/badge.svg)](https://github.com/jazzz/ramble/actions/workflows/lint.yml)
+
 
 # Ramble
 
@@ -18,7 +22,7 @@ The focus of this project is on microcontrollers and other environments where th
 
 # Message Schema
 
-Messages must be well defined with concrete types so they can be parsed. Since no assumptions can be made about the messages, developers must provide unambigious definitions about the messages.
+Messages must be well defined with concrete types so they can be parsed. Since no assumptions can be made about the messages, developers must provide unambigious definitions about the messages at compile time.
 
 ```yaml
 #Example Ramble File
@@ -28,13 +32,13 @@ namespace: thisnamespace        # namespace not implemented
 packets:
   - name: register_sensor       # Required
     fields:
-      - sensor_id: u8
+      - sensor_id: U8
       - sensor_name: String     # Type:String not implemented
   - name: sensor_update         # Required
     fields:
-      - timestamp: u64          # Type:u64 not implemented
-      - sensor_id: u8
-      - sensor_value: u8
+      - timestamp: U64          # Type:u64 not implemented
+      - sensor_id: U8
+      - sensor_value: U8
 
 tagged_unions:                  # This is the default configuration
   - name: packets               # for now. A wrapping struct with a 
@@ -47,4 +51,4 @@ The following types are currently supported in `ramble.yaml` files
 
 | Category          |  Types   |
 | :---------------- | :------: |
-| numeric           |  `u8`    |
+| numeric           |  `U8`, `U16` ,`U32`, `U64`, `I8`, `I16` ,`I32`, `I64`|
