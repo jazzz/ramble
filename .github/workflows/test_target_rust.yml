@@ -20,18 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RAMBLE_GENERATED_DIRECTORY: ./tests/rust/src
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-features
 
-      - uses: actions-rs/cargo@v1
-        working-directory: ./tests/rust/
-        with:
-          command: test
-          args: --lib --bins
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: ./tests/cpp/run_gen_tests.sh ./tests/ramble.yaml
