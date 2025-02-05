@@ -150,3 +150,37 @@ impl From<{{upper_camel pkt.name}}> for Message {
     }
 }
 {{/each}}
+
+
+// TODO: Parameterize string length to handle variable sized len field
+pub type Strlen = u16;
+
+#[derive(Debug, PartialEq, BinRead, BinWrite)]
+pub struct PString {
+    len: Strlen,
+    #[br(count = len)]
+    contents: Vec<u8>,
+}
+
+impl PString {
+    pub fn new(input: String) -> Self {
+        PString {
+            len: input.len() as Strlen,
+            contents: input.as_bytes().to_vec(),
+        }
+    }
+
+    // TODO: Error only thrown when string is accessed, Error should be thrown on serialize when message is deserialized.
+    pub fn get_str(&self) -> Result<&str, DeserializeError> {
+        std::str::from_utf8(self.contents.as_slice()).map_err(|e| DeserializeError::UtfError(e))
+    }
+
+    pub fn set_str(&mut self, input: String) -> Strlen {
+        self.len = input.len() as Strlen;
+
+        // TODO: verify minimal copy of string bytes
+        self.contents = input.as_bytes().to_vec();
+
+        return self.len;
+    }
+}
