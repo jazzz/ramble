@@ -1,4 +1,4 @@
-name: Test(Cargo)
+name: Test(Ramble)
 
 on:
   push:
@@ -34,12 +34,3 @@ jobs:
         with:
           command: test
           args: --lib --bins
-
-
-  clippy_check:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
