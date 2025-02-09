@@ -5,9 +5,82 @@ fn main() {}
 #[cfg(test)]
 mod tests {
 
-    use std::u8;
+    use std::{io::Cursor, u8};
+
+    use binread::BinRead;
+    use binwrite::BinWrite;
 
     use crate::generated::*;
+
+    #[test]
+    fn pstruct_nominal() {
+        let input: String = "abcd".into();
+        let mut ps = PString::new(input.clone());
+
+        let inner = ps.get_str().expect("get_str");
+        assert!(input.as_str() == inner, "strings don't match");
+
+        let new_input: String = "efg".into();
+        let size = ps.set_str(new_input.clone());
+
+        assert!(size == new_input.len() as Strlen);
+    }
+
+    /// Tests that PString serializes and deserializes properly
+    #[test]
+    fn pstring_round_trip() {
+        let raw_bytes = vec![0x61, 0x62, 0x63, 0x64]; // "abcd"
+        let input = String::from_utf8(raw_bytes.clone()).expect("bad test setup");
+
+        let obj = PString::new(input.clone());
+
+        // Serialize PString
+        let mut buf: Vec<u8> = vec![];
+        obj.write(&mut buf).expect("bad writer");
+
+        // Deserialize back to object
+        let derserialzied_obj =
+            PString::read(&mut Cursor::new(buf.as_slice())).expect("deserializing");
+
+        // ReReserialize back to bytes
+        let mut other_buf: Vec<u8> = vec![];
+        obj.write(&mut other_buf).expect("bad writer");
+
+        // compare values
+        assert!(obj == derserialzied_obj, "obj mismatch");
+        assert!(buf == other_buf, "bytes mismatch");
+        assert!(buf == [0x04, 0x00, 0x61, 0x62, 0x63, 0x64]);
+    }
+
+    /// Tests that PString serializes and deserializes properly
+    #[test]
+    fn pstring_characterset() {
+        let ascii_set = String::from(
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[]~",
+        );
+
+        let obj = PString::new(ascii_set.clone());
+
+        // Serialize PString
+        let mut buf: Vec<u8> = vec![];
+        obj.write(&mut buf).expect("bad writer");
+
+        // Deserialize back to object
+        let deserialized_obj =
+            PString::read(&mut Cursor::new(buf.as_slice())).expect("deserializing");
+
+        // compare values
+        assert!(obj == deserialized_obj, "obj mismatch");
+        assert!(
+            ascii_set.as_str() == obj.get_str().unwrap(),
+            "string mismatch"
+        );
+
+        let some_index = 17;
+        buf[some_index] = 255; // Add Non UTFChars
+        let s = PString::read(&mut Cursor::new(buf.as_slice())).expect("message didn't parsing");
+        assert!(s.get_str().is_err(), "no error thrown on access");
+    }
 
     #[test]
     fn round_trip() {
@@ -107,5 +180,25 @@ mod tests {
 
         let deserialized_msg = Message::from_bytes(bytes.as_slice()).expect("to message");
         assert!(msg == deserialized_msg, "message mismatch");
+    }
+
+    #[test]
+    fn variable_len_message_serialization() {
+        let input_data = vec![0x61 as u8, 0x62, 0x63, 0x64];
+        let input_string = String::from_utf8(input_data.clone()).unwrap();
+
+        let msg: Message = VariableLen {
+            prefixed_str: PString::new(input_string),
+        }
+        .into();
+
+        let bytes = msg.to_bytes().expect("to_bytes");
+        let payload = &bytes.as_slice()[1..]; // Skip message tag;
+
+        // Expected bytes are the [Length, *input_str]
+        let mut expected = vec![input_data.len() as u8, 0];
+        expected.extend_from_slice(input_data.as_slice());
+
+        assert!(payload == expected);
     }
 }

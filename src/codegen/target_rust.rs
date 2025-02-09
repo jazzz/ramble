@@ -31,6 +31,7 @@ impl Lang for TargetRust {
             FieldType::I16 => "i16",
             FieldType::I32 => "i32",
             FieldType::I64 => "i64",
+            FieldType::PString => "PString",
         }
     }
 
